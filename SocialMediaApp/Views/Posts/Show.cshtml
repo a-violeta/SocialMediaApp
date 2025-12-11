@@ -1,0 +1,150 @@
+﻿@model SocialMediaApp.Models.Post
+
+
+@* Afisarea unei postari, dar cred ca nu e gata pt ca nu afiseaza totul despre o postare*@
+
+<!--verific daca am vreun mesaj de afisat pt utilizator-->
+@if (TempData["message"] != null)
+{
+    <div class="alert @ViewBag.Alert p-3 rounded-3 text-center mb-5">
+        @ViewBag.Message
+    </div>
+}
+
+<br />
+
+<div class="card">
+
+    <partial name="PostInfo" model="Model"></partial>
+
+    <!--n am scris afisare butoane si nici este admin, sunt ambele in lab 10-->
+    @if ((ViewBag.AfisareButoane == true && Model.UserId == ViewBag.UserCurent)
+        || ViewBag.EsteAdmin == true)
+    {
+        <div class="d-flex flex-row justify-content-between">
+
+            <a class="btn btn-success" asp-controller="Posts" asp-action="Edit" asp-route-id="@Model.Id">Editeaza postare</a>
+
+            <form method="post" asp-controller="Posts" asp-action="Delete" asp-route-id="@Model.Id">
+
+                <button class="btn btn-danger" type="submit">Sterge postare</button>
+
+            </form>
+
+        </div>
+    }
+
+
+</div>
+
+<br />
+<br />
+
+@* Afisare comentarii impreuna cu butoanele de editare si stergere *@
+
+@foreach (var comm in Model.Comments)
+{
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+
+            <div class="col-md-8">
+
+                <div>
+
+                    <p>@comm.Content</p>
+
+                    @if(comm.User != null)
+                    {
+                        <strong><i class="bi bi-person"> @comm.User.UserName</i></strong>
+                    }
+
+                </div>
+                <br>
+                <!--doar userul care a scris poate sa editeze sau sa stearga comentariul-->
+
+                @if (comm.UserId == ViewBag.UserCurent)
+                {
+                    <div class="d-flex">
+                        <div>
+                            <a class="btn btn-outline-primary" asp-controller="Comments" asp-action="Edit" asp-route-id="@comm.Id">
+                                <i class="bi bi-pencil-square"></i> Editeaza
+                            </a>
+
+                        </div>
+                        <div>
+                            <form method="post" asp-controller="Comments" asp-action="Delete" asp-route-id="@comm.Id">
+
+                                <button class="btn btn-outline-danger" type="submit"><i class="bi bi-trash"></i>Sterge</button>
+
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                <!--admin poate sa stearga orice comentariu-->
+                @if (ViewBag.EsteAdmin == true)
+                {
+                    <div class="d-flex">
+                        <div>
+                            <form method="post" asp-controller="Comments" asp-action="Delete" asp-route-id="@comm.Id">
+
+                                <button class="btn btn-outline-danger" type="submit"><i class="bi bi-trash"></i>Sterge</button>
+
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                <br />
+
+            </div>
+
+            <div class="col-md-2"></div>
+
+        </div>
+
+    </div>
+}
+
+
+@* Afisarea formularului in care se poate adauga un comentariu *@
+
+<div class="container">
+
+    <div class="row">
+
+        <div class="col-md-2"></div>
+
+        <div class="col-md-8">
+
+            <div class="card">
+
+                <form method="post" asp-controller="Posts" asp-action="Show">
+
+                    <div class="card-body">
+
+                        <input type="hidden" name="PostId" value="@Model.Id" />
+
+                        <label>Continut comentariu</label>
+                        <br />
+
+                        <textarea class="form-control" name="Content"></textarea>
+
+                        <br /><br />
+
+                        <button class="btn btn-success " type="submit">Adauga comentariul</button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-2"></div>
+
+    </div>
+
+</div>

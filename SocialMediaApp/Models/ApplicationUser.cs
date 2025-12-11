@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Identity.Client;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SocialMediaApp.Models
 {
     public class ApplicationUser : IdentityUser
     {
+        
         [Required(ErrorMessage = "Numele este obligatoriu")]
         public string FirstName { get; set; }
 
@@ -38,5 +41,11 @@ namespace SocialMediaApp.Models
 
         public virtual ICollection<Follows> Followers { get; set; } = new List<Follows>();
 
+        // variabila in care vom retine rolurile existente in baza de date
+        // pentru popularea unui dropdown list
+        // in ideea ca admin poate modifica rolul unui user
+        // admin poate sterge un user si atunci il sterge si din toate rolurile
+        [NotMapped]
+        public IEnumerable<SelectListItem>? AllRoles { get; set; }
     }
 }

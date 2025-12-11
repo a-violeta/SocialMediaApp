@@ -47,7 +47,14 @@ namespace SocialMediaApp.Models
                         NormalizedEmail = "ADMIN@TEST.COM",
                         Email = "admin@test.com",
                         NormalizedUserName = "ADMIN@TEST.COM",
-                        PasswordHash = hasher.HashPassword(null, "Admin1!")
+                        PasswordHash = hasher.HashPassword(null, "Admin1!"),
+
+                        //si campurile astea sunt obligatorii
+                        FirstName = "Adminul",
+                        LastName = "Intai",
+                        ProfileVisibility = "public",
+                        Description = "Default description",
+                        ProfilePicture = "default.png"
                     },
 
                     new ApplicationUser
@@ -58,18 +65,31 @@ namespace SocialMediaApp.Models
                         NormalizedEmail = "USER@TEST.COM",
                         Email = "user@test.com",
                         NormalizedUserName = "USER@TEST.COM",
-                        PasswordHash = hasher.HashPassword(null, "User1!")
+                        PasswordHash = hasher.HashPassword(null, "User1!"),
+
+                        FirstName = "Userul",
+                        LastName = "Intai",
+                        ProfileVisibility = "public",
+                        Description = "Default description",
+                        ProfilePicture = "default_u1.png"
                     },
 
                     new ApplicationUser
+                    //parea dubios sa fie 2 useri cu acelasi nume
                     {
                         Id = "9807aab3-397d-41d4-8efb-13fc06ffee5a",
-                        UserName = "user@test.com",
+                        UserName = "user2@test.com",
                         EmailConfirmed = true,
-                        NormalizedEmail = "USER@TEST.COM",
-                        Email = "user@test.com",
-                        NormalizedUserName = "USER@TEST.COM",
-                        PasswordHash = hasher.HashPassword(null, "User1!")
+                        NormalizedEmail = "USER2@TEST.COM",
+                        Email = "user2@test.com",
+                        NormalizedUserName = "USER2@TEST.COM",
+                        PasswordHash = hasher.HashPassword(null, "User2!"),
+
+                        FirstName = "Userul",
+                        LastName = "Secund",
+                        ProfileVisibility = "public",
+                        Description = "Default description",
+                        ProfilePicture = "default_u2.png"
                     }
                 );
 
