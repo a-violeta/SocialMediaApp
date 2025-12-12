@@ -11,7 +11,7 @@ namespace SocialMediaApp.Models
         public static void Initialize(IServiceProvider serviceProvider)
         {
             using (var context = new ApplicationDbContext(serviceProvider
-                .GetRequiredService <DbContextOptions<ApplicationDbContext>>()))
+                .GetRequiredService<DbContextOptions<ApplicationDbContext>>()))
             {
                 if (context.Roles.Any())
                 {
@@ -22,16 +22,16 @@ namespace SocialMediaApp.Models
 
                     new IdentityRole
                     {
-                        Id = "239daf37-31bd-42c4-9f11-8320737429cc", 
-                        Name = "Admin", 
-                        NormalizedName = "Admin".ToUpper() 
+                        Id = "239daf37-31bd-42c4-9f11-8320737429cc",
+                        Name = "Admin",
+                        NormalizedName = "Admin".ToUpper()
                     },
 
                     new IdentityRole
                     {
-                        Id = "38d898da-719a-4b6c-bde8-905712ada7e7", 
-                        Name = "User", 
-                        NormalizedName = "User".ToUpper() 
+                        Id = "38d898da-719a-4b6c-bde8-905712ada7e7",
+                        Name = "User",
+                        NormalizedName = "User".ToUpper()
                     }
 
                 );
@@ -112,6 +112,66 @@ namespace SocialMediaApp.Models
                         RoleId = "38d898da-719a-4b6c-bde8-905712ada7e7"
                     }
                 );
+
+                context.Groups.AddRange(
+                    new Group
+                    {
+                        Id = 1,
+                        Name = "Cinemateca",
+                        Description = "Discutii despre filme"
+                    },
+                    new Group
+                    {
+                        Id = 2,
+                        Name = "The guitarists",
+                        Description = "Tips & tricks pentru urechila muzicale"
+                    },
+                    new Group
+                    {
+                        Id = 3,
+                        Name = "Bloc H5 scara 4",
+                        Description = "Batraneii veseli din cartier"
+                    }
+                );
+
+                context.Posts.AddRange(
+                    new Post
+                    {
+                        Id = 1,
+                        TextContent = "Salut comunitate!",
+                        Date = DateTime.Now,
+                        UserId = "00974e5c-2d38-4fc2-8745-e88ceba0d3ba" // admin
+                    },
+                    new Post
+                    {
+                        Id = 2,
+                        TextContent = "Cai verzi pe pereti",
+                        Date = DateTime.Now,
+                        UserId = "45b7d85f-53f2-4f8c-b4eb-ea70f3c2276e" // user1
+                    },
+                    new Post
+                    {
+                        Id = 3,
+                        TextContent = "Azi incepe vacanta",
+                        Date = DateTime.Now,
+                        UserId = "9807aab3-397d-41d4-8efb-13fc06ffee5a" // user2
+                    },
+                    new Post
+                    {
+                        Id = 4,
+                        TextContent = "Craciun fericit!",
+                        Date = DateTime.Now,
+                        UserId = "45b7d85f-53f2-4f8c-b4eb-ea70f3c2276e" // user1
+                    },
+                    new Post
+                    {
+                        Id = 5,
+                        TextContent = "Aceasta este o postare",
+                        Date = DateTime.Now,
+                        UserId = "00974e5c-2d38-4fc2-8745-e88ceba0d3ba" // admin
+                    }
+                );
+
                 context.SaveChanges();
             }
         }
