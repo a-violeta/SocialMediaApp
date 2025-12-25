@@ -19,6 +19,7 @@ html {
 
 body {
   margin-bottom: 60px;
+  padding-top: 70px;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -48,17 +49,22 @@ body {
     width: 35%;
 }
 
+/* 
+    mai jos sunt clasele pentru 
+    profilul unui utilizator
+*/
+
 .profile-info-container {
-    width: 500px;
-    height: 120px;
+    width: 100%;
+    min-height: 130px;
     font-family: Arial;
     cursor: default;
-    
 }
 
 .pfp-container {
-    width: 120px;
+    min-width: 120px;
     height: 120px;
+    width: 120px;
     overflow: hidden;
     border-radius: 50%;
     margin-right: 15px;
@@ -72,7 +78,7 @@ body {
 }
 
 .user-profile {
-    width: 100%;
+    width: 500px;
     height: 100%;
 }
 
@@ -85,8 +91,10 @@ body {
 }
 
 .follow-button {
-    width: 500px;
+    width: 100%;
 }
+
+/* postarile din profil */
 
 .profile-posts-container {
     width: 700px;
@@ -104,10 +112,13 @@ body {
 }
 
 .profile-post-info {
-    flex-grow: 1;
+    width: 100%;
 }
 
+/* poza de profil din postare */
+
 .post-pfp-container {
+    min-width: 60px;
     width: 60px;
     height: 60px;
     overflow: hidden;
@@ -119,9 +130,15 @@ body {
     width: 100%;
     height: 100%;
 }
+
+/* continut text postare */
+
 .profile-post-content {
     flex-grow: 1;
+    white-space: pre-line;
 }
+
+/* informatii si actiuni postare */
 
 .profile-post-likes {
     width: 31px;
@@ -132,7 +149,8 @@ body {
 }
 
 .post-options {
-    width: 200px;
+    flex-grow: 1;
+    padding-right: 25px;
 }
 
 .post-data {
@@ -141,4 +159,122 @@ body {
 
 .post-date {
     margin-left: auto;
+}
+
+.clickable-post {
+    cursor: pointer;
+}
+
+.three-dot-menu {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    border-radius: 5px;
+}
+
+.three-dot-menu:hover {
+    background-color: #f6f6f6;
+}
+
+/*
+    editare profil
+*/
+
+
+.edit-profile-info {
+    width: 500px;
+    min-height: 130px;
+    font-family: Arial;
+    cursor: default;
+}
+
+/* editare poza profil */
+
+.pfp-input {
+    min-width: 120px;
+    height: 120px;
+    width: 120px;
+    overflow: hidden;
+    border-radius: 50%;
+    margin-right: 15px;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+.pfp-input img {
+    width: 100%;
+    height: 100%;
+}
+.pfp-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.pfp-input:hover .pfp-overlay {
+    opacity: 1;
+}
+
+/* editare informatii profil */
+
+.change-info-form {
+    width: 500px;
+}
+
+/* responsive */
+
+@media screen and (max-width: 768px) {
+    .profile-posts-container {
+        width: 100%;
+    }
+
+    .pfp-container {
+        min-width: 90px;
+        width: 90px;
+        height: 90px;
+    }
+
+    .user-profile {
+        width: 100%;
+        height: 100%;
+    }
+
+    .profile-stats {
+        width: 80%;
+    }
+
+    .profile-info {
+        flex-grow: 1;
+    }
+
+    .profile-post {
+        min-height: 120px;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 9px;
+    }
+
+    .profile-post:hover {
+        background-color: #fafafa;
+    }
+
+    .post-pfp-container {
+        min-width: 60px;
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .user-profile {
+        width: 100%;
+    }
 }

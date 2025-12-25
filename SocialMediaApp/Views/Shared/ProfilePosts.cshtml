@@ -2,28 +2,19 @@
 
 @foreach (Post userPost in Model.Posts)
 {
-    <div class="profile-post d-flex flex-row mt-3">
+    <div class="profile-post position-relative d-flex flex-row mt-3 clickable-post" data-url=" @Url.Action("Show", "Posts", new { id = userPost.Id })">
         <div class="post-pfp-container">
             <img src="@Model.ProfilePicture" />
         </div>
-        <div class="profile-post-info d-flex flex-column">
+        <div class="profile-post-info d-flex flex-column text-wrap text-break">
             <div class="profile-post-username">
                 <b>@Model.FirstName @Model.LastName</b>
             </div>
-            <div class="profile-post-content d-flex flex-column flex-wrap">
-                @userPost.TextContent
-            </div>
-            <div class="post-data d-flex">
+            <div class="profile-post-content d-flex flex-column">@userPost.TextContent</div>
+            <div class="post-data d-flex flex-wrap mt-3">
                 <div class="post-options d-flex justify-content-between">
                     <div class="profile-post-likes d-flex justify-content-between">
                         <a><i class="bi bi-heart"></i> @userPost.WhoLiked.Count()</a>
-                    </div>
-                    <div class="view-post-detail">
-                        <a asp-controller="Posts"
-                           asp-action="Show"
-                           asp-route-id="@userPost.Id">
-                            <span>Vezi Detalii Postare</span>
-                        </a>
                     </div>
                 </div>
                 <div class="post-date d-flex">

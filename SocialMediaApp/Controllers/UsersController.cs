@@ -1,29 +1,40 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Build.Tasks.Deployment.Bootstrapper;
 using Microsoft.EntityFrameworkCore;
 using SocialMediaApp.Data;
 using SocialMediaApp.Models;
+using SocialMediaApp.ViewModels;
+using System.IO;
 
 namespace SocialMediaApp.Controllers
 {
 
     public class UsersController : Controller
     {
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
         private readonly ApplicationDbContext db;
 
         private readonly UserManager<ApplicationUser> _userManager;
 
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public UsersController(ApplicationDbContext context, 
+            UserManager<ApplicationUser> userManager, 
+            RoleManager<IdentityRole> roleManager,
+            IWebHostEnvironment webHostEnvironment)
         {
             db = context;
 
             _userManager = userManager;
 
             _roleManager = roleManager;
+
+            _webHostEnvironment = webHostEnvironment;
         }
 
         //admin poate vedea toti utilizatorii
@@ -57,73 +68,83 @@ namespace SocialMediaApp.Controllers
             }
         }
 
+
+
         //editare user dupa id nu e finalizata
-
-        /*
-        [Authorize(Roles = "User,Admin")]
-        public async Task<ActionResult> Edit(string id)
+        [HttpGet]
+        public async Task<ActionResult> Edit()
         {
+            string? id = _userManager.GetUserId(User);
             ApplicationUser? user = db.Users.Find(id);
-
+            ViewBag.User = user;
             if (user is null)
             {
                 return NotFound();
             }
-
-            // doar userul propriu are voie
-            if (id != _userManager.GetUserId(User))
+            var newData = await db.Users
+            .Where(u => u.Id == id)
+            .Select(u => new EditProfileViewModel
             {
-                return Forbid(); // sau Unauthorized()
-            }
-
-            else
-            {
-                //user isi poate modifica chiar orice?
-                //sa nu strice baza de date
-            }
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Description = u.Description,
+                ProfileVisibility = u.ProfileVisibility,
+                ExistingProfilePicture = u.ProfilePicture
+            }).FirstOrDefaultAsync();
+            return View(newData);
 
         }
 
         [HttpPost]
-        public async Task<ActionResult> Edit(string id, ApplicationUser newData, [FromForm] string newRole)
+        public async Task<ActionResult> Edit(EditProfileViewModel newData)
         {
-            ApplicationUser? user = db.Users.Find(id);
-
-            // doar userul propriu are voie
-            if (id != _userManager.GetUserId(User))
+            if (!ModelState.IsValid)
             {
-                return Forbid(); // sau Unauthorized()
+                return View(newData);
             }
+            string? id = _userManager.GetUserId(User);
+            ApplicationUser? user = db.Users
+                .Include(u => u.Posts)
+                .Where(u => u.Id == id)
+                .FirstOrDefault();
 
             if (user is null)
             {
                 return NotFound();
             }
+
             else
             {
                 if (ModelState.IsValid)
                 {
-                    user.UserName = newData.UserName;
-                    user.Email = newData.Email;
                     user.FirstName = newData.FirstName;
                     user.LastName = newData.LastName;
-                    user.PhoneNumber = newData.PhoneNumber;
-                    user.ProfilePicture = newData.ProfilePicture;
+
+                    string pfpFileName = newData.ExistingProfilePicture;
+                    if (newData.ProfilePicture != null)
+                    {
+                        string pfpSavePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "Profiles");
+
+                        pfpFileName = Guid.NewGuid().ToString() + "_" + newData.ProfilePicture.FileName;
+
+                        string pfpFilePath = Path.Combine(pfpSavePath, pfpFileName);
+
+                        using (var fileStream = new FileStream(pfpFilePath, FileMode.Create))
+                        {
+                            await newData.ProfilePicture.CopyToAsync(fileStream);
+                        }
+                    }
+                    user.ProfilePicture = Path.Combine("images", "Profiles", pfpFileName);
                     user.ProfileVisibility = newData.ProfileVisibility;
                     user.Description =  newData.Description;
 
-                    //aici cu rolul lui ce fac? as vrea sa se pastreze ca nu se face singur ce vrea el
-
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
 
                 }
-
-                user.AllRoles = GetAllRoles();
-                return RedirectToAction("Index");
+                return RedirectToAction("Show", "Users", new { id });
             }
         }
-        */
-
+        /*
         [HttpPost]
         public IActionResult Delete(string id)
         {
@@ -139,6 +160,7 @@ namespace SocialMediaApp.Controllers
                             .First();
 
             // Delete user comments
+
             if (user.Comments.Count > 0)
             {
                 foreach (var comment in user.Comments)
@@ -172,7 +194,7 @@ namespace SocialMediaApp.Controllers
             return RedirectToAction("Index");
 
         }
-
+        */
 
         [NonAction]
         public IEnumerable<SelectListItem> GetAllRoles()

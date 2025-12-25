@@ -1,13 +1,14 @@
 ﻿@model SocialMediaApp.Models.ApplicationUser
 
 <div class="full-profile d-flex flex-column align-items-center">
-    <div class="user-profile d-flex flex-column align-items-center border-bottom pb-3"> 
+    <div class="user-profile d-flex flex-column flex-wrap align-items-center position-relative pb-3"> 
         @*informatii profil*@
-        <div class="d-flex flex-row profile-info-container">
+        <div class="d-flex flex-row profile-info-container w-100 text-break">
             @*poza profil*@
             <div class="pfp-container">
                 <img src = "@Model.ProfilePicture"/>
             </div>
+            @*informatii profil*@
             <div class="profile-info d-flex flex-column justify-content-between">
                 <div class="profile-full-name fs-4">
                     <b>@Model.FirstName @Model.LastName</b>
@@ -21,14 +22,27 @@
                     @Model.Description
                 </div>
             </div>
+            @*setari profil*@
+            <div class="dropdown">
+                <button class="three-dot-menu" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <li><a asp-action="Edit" class="dropdown-item">Edit profile</a></li>
+                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Manage account</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#">Delete account</a></li>
+                </ul>
+            </div>
+
         </div>
         @*buton follow - momentan nefunctional*@
-        <div class="mt-2">
+        <div class="mt-3 position-relative w-100">
             <button class="follow-button btn btn-primary">Follow</button>
         </div>
 
     </div>
-    <div class="profile-posts-container d-flex flex-column">
+    <div class="profile-posts-container d-flex flex-column border-top">
         <partial name="ProfilePosts" model="Model"></partial>
     </div>
 </div>

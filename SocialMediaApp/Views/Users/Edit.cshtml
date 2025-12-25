@@ -1,48 +1,76 @@
-﻿@model SocialMediaApp.Models.ApplicationUser
+﻿@model SocialMediaApp.ViewModels.EditProfileViewModel
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
 
+<form asp-controller="Users" 
+asp-action="Edit" 
+method="post"
+class="d-flex flex-column align-items-center"
+enctype="multipart/form-data">
+    <input type="hidden" asp-for="ExistingProfilePicture" />
+    <div class="d-flex flex-row edit-profile-info text-break mb-3">
+        @*poza profil*@
+        <label class="pfp-input" for="inputPfp" asp-for="ProfilePicture">
+            <img id="previewPfp" src="@Model.ExistingProfilePicture" />
 
-<form asp-controller="Users" asp-action="Edit" method="post" asp-route-id="@Model.Id">
-
-    <i class="bi bi-person"></i>
-    <label asp-for="FirstName">Prenume utilizator</label>
-    <br />
-    <input asp-for="FirstName" class="form-control" />
-    <br />
-
-    <label asp-for="LastName">Nume utilizator</label>
-    <br />
-    <input asp-for="LastName" class="form-control" />
-    <br />
-
-    <i class="bi bi-envelope"></i>
-    <label asp-for="Email">Email utilizator</label>
-    <br />
-    <input asp-for="Email" class="form-control" />
-    <br />
-
-    <!--poza-->
-
-    <i class="bi bi-card-list"></i>
-    <label>Selectati rolul</label>
-    <br />
-
-
-    <select name="newRole" class="form-control">
-        <option selected>Selectati rolul</option>
-
-        @foreach (var role in ViewBag.AllRoles)
-        {
-            @if (ViewBag.UserRole == role.Value)
-            {
-                <option selected="selected" value="@role.Value">@role.Text</option>
-            }
-            else
-            {
-                <option value="@role.Value">@role.Text</option>
-            }
-        }
-    </select>
-
-    <button type="submit" class="btn btn-sm btn-success">Editare user</button>
-
+            <div class="pfp-overlay">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+        </label>
+        <input id ="inputPfp"
+               asp-for="ProfilePicture"
+               type="file"
+               name="profilePicture"
+               accept="image/*"
+               hidden
+        />
+        @*informatii profil*@
+        <div class="profile-info d-flex flex-column justify-content-between">
+            <div id="previewName" class="edit-name fs-4">
+                <b>@Model.FirstName @Model.LastName</b>
+            </div>
+            <div class="profile-stats d-flex justify-content-between">
+                <div>Posts: @ViewBag.User.Posts.Count</div>
+                <div>Followers: @ViewBag.User.Followers.Count</div>
+                <div>Following: @ViewBag.User.Follows.Count</div>
+            </div>
+            <div id="previewDescription" class="profile-description">
+                @Model.Description
+            </div>
+        </div>
+    </div>
+    <div class="change-info-form">
+        <div class="form-floating mb-3">
+            <input class="form-control" type="text" asp-for="FirstName" 
+            id="firstNameInput"/>
+            <label asp-for="FirstName">
+                First name
+            </label>
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+        <div class="form-floating mb-3">
+            <input class="form-control" type="text" asp-for="LastName" 
+            id="lastNameInput"/>
+            <label asp-for="LastName">
+                Last name
+            </label>
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+        <div class="form-group mb-3">
+            <label asp-for="Description">Description</label>
+            <textarea id="descriptionInput" class="form-control" asp-for="Description">
+            </textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+        <div class="form-group mb-3">
+            <label asp-for="ProfileVisibility">Visibility</label>
+            <select class="form-control" asp-for="ProfileVisibility">
+                <option value="public">public</option>
+                <option value="privat">privat</option>
+            </select>
+            <span asp-validation-for="ProfileVisibility" class="text-danger"></span>
+        </div>
+    </div>
+    <button class="btn btn-primary" type="submit">Save changes</button>
 </form>
