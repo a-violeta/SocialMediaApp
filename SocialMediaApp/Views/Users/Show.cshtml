@@ -6,7 +6,7 @@
         <div class="d-flex flex-row profile-info-container w-100 text-break">
             @*poza profil*@
             <div class="pfp-container">
-                <img src = "@Model.ProfilePicture"/>
+                <img src="~/images/Profiles/@Model.ProfilePicture"/>
             </div>
             @*informatii profil*@
             <div class="profile-info d-flex flex-column justify-content-between">
@@ -24,15 +24,23 @@
             </div>
             @*setari profil*@
             <div class="dropdown">
-                <button class="three-dot-menu" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="bi bi-three-dots-vertical"></i>
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <li><a asp-action="Edit" class="dropdown-item">Edit profile</a></li>
-                    <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Manage account</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#">Delete account</a></li>
-                </ul>
+                @if (ViewBag.IsMe == true || ViewBag.AmIAdmin == true)
+                {
+                    <button class="three-dot-menu" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        @if (ViewBag.IsMe == true)
+                        {
+                            <li><a asp-action="Edit" class="dropdown-item">Edit profile</a></li>
+                            <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Manage account</a></li>
+                        }
+                        else if (ViewBag.AmIAdmin)
+                        {
+                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@Model.Id">Delete account</a></li>
+                        }
+                    </ul>
+                }
             </div>
 
         </div>

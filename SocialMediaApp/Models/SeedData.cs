@@ -54,7 +54,7 @@ namespace SocialMediaApp.Models
                         LastName = "Intai",
                         ProfileVisibility = "public",
                         Description = "Default description",
-                        ProfilePicture = "/images/Profiles/pfp-admin.png"
+                        ProfilePicture = "pfp-admin.png"
                     },
 
                     new ApplicationUser
@@ -71,7 +71,7 @@ namespace SocialMediaApp.Models
                         LastName = "Intai",
                         ProfileVisibility = "public",
                         Description = "Utilizator cu cont public",
-                        ProfilePicture = "/images/Profiles/pfp-user1.jpg"
+                        ProfilePicture = "pfp-user1.jpg"
                     },
 
                     new ApplicationUser
@@ -89,7 +89,7 @@ namespace SocialMediaApp.Models
                         LastName = "Secund",
                         ProfileVisibility = "privat",
                         Description = "Utilizator cu cont privat",
-                        ProfilePicture = "/images/Profiles/pfp-user2.png"
+                        ProfilePicture = "pfp-user2.png"
                     }
                 );
 
