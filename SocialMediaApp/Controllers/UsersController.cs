@@ -57,7 +57,11 @@ namespace SocialMediaApp.Controllers
                 .Include(u => u.Posts)
                 .Where(u => u.Id == id)
                 .FirstOrDefault();
-
+            bool isMe = user.Id == _userManager.GetUserId(User);
+            var connectedUser = await _userManager.GetUserAsync(User);
+            bool amIAdmin = await _userManager.IsInRoleAsync(connectedUser, "Admin"); ;
+            ViewBag.IsMe = isMe;
+            ViewBag.AmIAdmin = amIAdmin;
             if (user is null)
             {
                 return NotFound();
@@ -68,9 +72,7 @@ namespace SocialMediaApp.Controllers
             }
         }
 
-
-
-        //editare user dupa id nu e finalizata
+        // editare user e finalizata
         [HttpGet]
         public async Task<ActionResult> Edit()
         {
@@ -119,7 +121,7 @@ namespace SocialMediaApp.Controllers
                 {
                     user.FirstName = newData.FirstName;
                     user.LastName = newData.LastName;
-
+                    var oldImagePath = user.ProfilePicture;
                     string pfpFileName = newData.ExistingProfilePicture;
                     if (newData.ProfilePicture != null)
                     {
@@ -133,8 +135,19 @@ namespace SocialMediaApp.Controllers
                         {
                             await newData.ProfilePicture.CopyToAsync(fileStream);
                         }
+
+                        // stergem poza de profil veche
+                        if (!string.IsNullOrEmpty(oldImagePath))
+                        {
+                            var oldPath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "Profiles", oldImagePath);
+                            if (System.IO.File.Exists(oldPath))
+                            {
+                                System.IO.File.Delete(oldPath);
+                            }
+                        }
                     }
-                    user.ProfilePicture = Path.Combine("images", "Profiles", pfpFileName);
+                    user.ProfilePicture = pfpFileName;
+
                     user.ProfileVisibility = newData.ProfileVisibility;
                     user.Description =  newData.Description;
 
@@ -144,9 +157,21 @@ namespace SocialMediaApp.Controllers
                 return RedirectToAction("Show", "Users", new { id });
             }
         }
-        /*
-        [HttpPost]
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(string id)
+        {
+            var user = db.Users.Find(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return View();
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult DeleteConfirmed(string id)
         {
 
             //teoretic mai trebuie sterse si toate mesajele lui din diferite grupuri sau??
@@ -157,33 +182,40 @@ namespace SocialMediaApp.Controllers
                             .Include(u => u.Comments)
                             .Include(u => u.Likes)
                             .Where(u => u.Id == id)
-                            .First();
+                            .FirstOrDefault();
 
-            // Delete user comments
-
-            if (user.Comments.Count > 0)
+            if (user is null)
             {
-                foreach (var comment in user.Comments)
-                {
-                    db.Comments.Remove(comment);
-                }
+                return NotFound();
             }
 
-            // Delete user likes
-            if (user.Likes.Count > 0)
+            // anonimizam comentariile
+
+            foreach (var comment in user.Comments)
             {
-                foreach (var l in user.Likes)
-                {
-                    db.Likes.Remove(l);
-                }
+                comment.UserId = null;
             }
 
-            // Delete user posts
-            if (user.Posts.Count > 0)
+            // stergem like-urile
+
+            foreach (var l in user.Likes)
             {
-                foreach (var post in user.Posts)
+                db.Likes.Remove(l);
+            }
+
+            // anonimizam postarile
+
+            foreach (var post in user.Posts)
+            {
+                post.UserId = null;
+            }
+
+            if (!string.IsNullOrEmpty(user.ProfilePicture))
+            {
+                var ProfilePicturePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "Profiles", user.ProfilePicture);
+                if (System.IO.File.Exists(ProfilePicturePath))
                 {
-                    db.Posts.Remove(post);
+                    System.IO.File.Delete(ProfilePicturePath);
                 }
             }
 
@@ -191,28 +223,8 @@ namespace SocialMediaApp.Controllers
 
             db.SaveChanges();
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "Home");
 
-        }
-        */
-
-        [NonAction]
-        public IEnumerable<SelectListItem> GetAllRoles()
-        {
-            var selectList = new List<SelectListItem>();
-
-            var roles = from role in db.Roles
-                        select role;
-
-            foreach (var role in roles)
-            {
-                selectList.Add(new SelectListItem
-                {
-                    Value = role.Id.ToString(),
-                    Text = role.Name.ToString()
-                });
-            }
-            return selectList;
         }
     }
 }

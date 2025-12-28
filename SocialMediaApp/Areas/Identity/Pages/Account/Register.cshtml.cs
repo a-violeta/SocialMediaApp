@@ -165,7 +165,7 @@ namespace SocialMediaApp.Areas.Identity.Pages.Account
                 user.LastName = Input.LastName;
                 user.Description = Input.Description;
                 user.ProfileVisibility = Input.ProfileVisibility;
-                user.ProfilePicture = Path.Combine("images", "Profiles", pfpFileName);
+                user.ProfilePicture = pfpFileName;
                 
                 var result = await _userManager.CreateAsync(user, Input.Password);
 

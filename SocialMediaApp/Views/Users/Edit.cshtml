@@ -12,7 +12,7 @@ enctype="multipart/form-data">
     <div class="d-flex flex-row edit-profile-info text-break mb-3">
         @*poza profil*@
         <label class="pfp-input" for="inputPfp" asp-for="ProfilePicture">
-            <img id="previewPfp" src="@Model.ExistingProfilePicture" />
+            <img id="previewPfp" src="~/images/Profiles/@Model.ExistingProfilePicture" />
 
             <div class="pfp-overlay">
                 <i class="bi bi-pencil-square"></i>
