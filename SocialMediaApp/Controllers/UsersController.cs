@@ -50,6 +50,44 @@ namespace SocialMediaApp.Controllers
             return View();
         }
 
+        //cautare user dupa o bucata din nume/prenume sau nume complet, mai multe cuvinte
+        //afiseaza orice user (privat/public) momentan
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Search(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return View(new List<ApplicationUser>());
+            }
+
+            // spargem textul introdus în cuvinte
+            var words = query
+                .Trim()
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            var usersQuery = db.Users.AsQueryable();
+
+            foreach (var word in words)
+            {
+                string w = word;
+
+                usersQuery = usersQuery.Where(u =>
+                    (u.FirstName != null && u.FirstName.Contains(w)) ||
+                    (u.LastName != null && u.LastName.Contains(w)));
+            }
+
+            var users = usersQuery
+                .OrderBy(u => u.FirstName)
+                .Take(20)
+                .ToList();
+
+            ViewBag.Query = query;
+            return View(users);
+        }
+
+
         //afisare user dupa id
         public async Task<ActionResult> Show(string id)
         {

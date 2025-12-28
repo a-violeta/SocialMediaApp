@@ -1,0 +1,32 @@
+﻿@model List<ApplicationUser>
+
+<h2>Rezultate căutare</h2>
+
+@if (!Model.Any())
+{
+    <p>Niciun utilizator găsit.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var user in Model)
+        {
+            <a asp-controller="Users"
+               asp-action="Show"
+               asp-route-id="@user.Id"
+               class="list-group-item list-group-item-action d-flex align-items-center">
+
+                <img src="@user.ProfilePicture"
+                     class="rounded-circle me-3"
+                     width="40"
+                     height="40"
+                     alt="profile" />
+
+                <div>
+                    <strong><i class="bi bi-person"></i> @user.FirstName @user.LastName</strong><br />
+                    <small><i class="bi bi-book-half"></i> @user.Description</small>
+                </div>
+            </a>
+        }
+    </ul>
+}
