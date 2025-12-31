@@ -29,6 +29,7 @@
                         <li class="nav-item">
                             <a class="nav-link fs-6" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-house"></i> Acasă</a>
                         </li>
+
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
@@ -43,6 +44,25 @@
                             </li>
                         }
                     </ul>
+
+                    <form asp-controller="Users"
+                          asp-action="Search"
+                          method="get"
+                          class="d-flex me-3">
+
+                        <input type="search"
+                               name="query"
+                               class="form-control form-control-sm me-2"
+                               placeholder="Caută persoane..."
+                               aria-label="Search" />
+
+                        <button class="btn btn-outline-light btn-sm" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+
+                    </form>
+
+
                     <partial name="_LoginPartial" />
                 </div>
             </div>
