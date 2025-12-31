@@ -2,11 +2,13 @@
 @model IEnumerable<SocialMediaApp.Models.Group>
 @inject UserManager<ApplicationUser> UserManager
 
-<h2>Grupuri disponibile</h2>
+<h2>Groups to join</h2>
+
+<br />
 
 @if (!Model.Any())
 {
-    <p class="text-muted">Nu există grupuri disponibile momentan.</p>
+    <p class="text-muted">There are no groups.</p>
 }
 else
 {
@@ -20,8 +22,14 @@ else
                     <a asp-controller="Groups" asp-action="Show" asp-route-id="@group.Id">
                         <strong>@group.Name</strong>
                     </a>
-                    <p class="mb-1 text-muted">@group.Description</p>
-                    <small>@group.Users.Count membri</small>
+                    <p class="mb-1 text-muted">
+                        <i class="bi bi-card-text"></i>
+                        @group.Description
+                    </p>
+                    <small>
+                        <i class="bi bi-people"></i>
+                        @group.Users.Count members
+                    </small>
                 </div>
 
                 <!-- Buton Join / Leave -->

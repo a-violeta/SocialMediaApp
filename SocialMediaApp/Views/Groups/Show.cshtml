@@ -1,6 +1,14 @@
 ﻿@using System.Security.Claims
 @model Group
 
+@{
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    bool isMember = User.Identity.IsAuthenticated &&
+                    Model.Users.Any(u => u.UserId == currentUserId);
+
+    var membership = Model.Users.FirstOrDefault(u => u.UserId == currentUserId);
+}
+
 <h2>@Model.Name</h2>
 
 <p class="text-muted">@Model.Description</p>
@@ -9,7 +17,10 @@
 
 <!-- Membrii grupului -->
 
-<h5>Membri (@Model.Users.Count)</h5>
+<h5>
+    <i class="bi bi-people"></i>
+    Members (@Model.Users.Count)
+</h5>
 
 <ul class="list-group mb-4">
     @foreach (var gu in Model.Users)
@@ -37,7 +48,7 @@
                     <input type="hidden" name="groupId" value="@Model.Id" />
                     <input type="hidden" name="userId" value="@gu.UserId" />
                     <button class="btn btn-sm btn-danger">
-                        Elimină
+                        Remove
                     </button>
                 </form>
             }
@@ -50,20 +61,19 @@
 <!--buton join sau status cerere-->
 @if (User.Identity.IsAuthenticated)
 {
-    bool isMember = Model.Users.Any(u => u.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier));
     bool hasRequest = ViewBag.HasJoinRequest == true;
 
     if (!isMember && !hasRequest)
     {
         <form asp-action="Join" method="post">
             <input type="hidden" name="groupId" value="@Model.Id" />
-            <button class="btn btn-success btn-sm">Join Group</button>
+            <button class="btn btn-success btn-sm">Join</button>
         </form>
     }
     //de verificat daca afiseaza asta frumos
     else if (hasRequest)
     {
-        <span class="text-muted">Cerere trimisă (în așteptare)</span>
+        <span class="text-muted">Request sent (pending)</span>
     }
 
     <hr />
@@ -73,13 +83,16 @@
 @if (ViewBag.IsModerator == true)
 {
 
-    <h5>Cereri de intrare</h5>
+    <h5>
+        <i class="bi bi-arrow-down-square"></i>
+        Join requests
+    </h5>
 
     var requests = ViewBag.JoinRequests as List<GroupJoinRequest>;
 
     if (!requests.Any())
     {
-        <p class="text-muted">Nu există cereri.</p>
+        <p class="text-muted">There are no requests.</p>
     }
     else
     {
@@ -97,12 +110,12 @@
                 <div>
                     <form asp-action="Approve" method="post" class="d-inline">
                         <input type="hidden" name="requestId" value="@r.Id" />
-                        <button class="btn btn-success btn-sm">Aprobă</button>
+                        <button class="btn btn-success btn-sm">Approve</button>
                     </form>
 
                     <form asp-action="Reject" method="post" class="d-inline">
                         <input type="hidden" name="requestId" value="@r.Id" />
-                        <button class="btn btn-danger btn-sm">Respinge</button>
+                        <button class="btn btn-danger btn-sm">Reject</button>
                     </form>
                 </div>
             </div>
@@ -113,69 +126,31 @@
 
 <!-- Mesaje grup -->
 
-<h5>Mesaje</h5>
-
-@if (!Model.Messages.Any())
+@if (isMember)
 {
-    <p class="text-muted">Nu există mesaje încă.</p>
-}
-else
-{
-    @foreach (var msg in Model.Messages.OrderBy(m => m.Id))
-    {
-        <div class="border rounded p-2 mb-2">
-            <strong>
-                <a asp-controller="Users"
-                   asp-action="Show"
-                   asp-route-id="@msg.UserId">
-                    @msg.User?.FirstName @msg.User?.LastName
-                </a>
-            </strong>
+    <h5>
+        <i class="bi bi-chat-dots"></i>
+        Messages
+    </h5>
 
-            <p class="mb-0">@msg.TextContent</p>
-        </div>
-    }
-}
-
-
-<!--scriere mesaj-->
-@if (User.Identity.IsAuthenticated)
-{
-    <form asp-controller="GroupMessages"
-          asp-action="Create"
-          method="post">
-
-        <input type="hidden" name="GroupId" value="@Model.Id" />
-
-        <div class="mb-2">
-            <textarea name="TextContent"
-                  class="form-control"
-                  rows="2"
-                  placeholder="Scrie un mesaj..."
-                  required></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-sm">
-            Trimite
-        </button>
-    </form>
-
-    <hr />
+    <a asp-action="Messages"
+       asp-controller="Groups"
+       asp-route-groupId="@Model.Id"
+       class="btn btn-outline-primary btn-sm mb-3">
+        Show messages
+    </a>
 }
 
 
 <!--buton parasire grup-->
 @if (User.Identity.IsAuthenticated)
 {
-    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    var membership = Model.Users.FirstOrDefault(u => u.UserId == currentUserId);
-
     if (membership != null && !membership.IsModerator)
     {
         <form asp-action="Leave" method="post">
             <input type="hidden" name="groupId" value="@Model.Id" />
             <button class="btn btn-outline-danger btn-sm">
-                Părăsește grupul
+                Leave group
             </button>
         </form>
     }
@@ -185,17 +160,16 @@ else
 <!--butoane stergere si editare grup-->
 @if (ViewBag.IsModerator == true)
 {
-
     <div class="mt-2">
 
     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-primary me-2">
-        Editare grup
+        Edit group
     </a>
 
     <form asp-action="DeleteConfirmed" method="post" onsubmit="return confirm('Sigur vrei să ștergi grupul?');" class="d-inline">
         <input type="hidden" name="id" value="@Model.Id" />
         <button type="submit" class="btn btn-danger btn-sm">
-            Șterge grupul
+            Delete group
         </button>
     </form>
 

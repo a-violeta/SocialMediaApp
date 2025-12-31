@@ -1,0 +1,137 @@
+﻿@using System.Security.Claims
+@model Group
+
+<h3>Messages – @Model.Name</h3>
+
+<a asp-action="Show"
+   asp-controller="Groups"
+   asp-route-id="@Model.Id"
+   class="btn btn-sm btn-outline-secondary mb-3">
+    ← Back to group main page
+</a>
+
+@if (TempData["MessageError"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["MessageError"]
+    </div>
+}
+
+@{
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    bool isModerator = ViewBag.IsModerator == true;
+}
+
+<div class="border rounded p-3 mb-3"
+     style="max-height: 450px; overflow-y: auto;">
+
+    @if (!Model.Messages.Any())
+    {
+        <p class="text-muted">There are no messages.</p>
+    }
+    else
+    {
+        @foreach (var msg in Model.Messages.OrderByDescending(m => m.Id))
+        {
+            <div class="border-bottom pb-2 mb-2">
+
+                <strong>
+                    <a asp-controller="Users"
+                       asp-action="Show"
+                       asp-route-id="@msg.UserId">
+                        @msg.User?.FirstName @msg.User?.LastName
+                    </a>
+                </strong>
+
+                <p class="mb-1">@msg.TextContent</p>
+
+                @* Butoane edit / delete *@
+                @if (msg.UserId == currentUserId || isModerator)
+                {
+                    <div class="text-end">
+
+                        @if (msg.UserId == currentUserId)
+                        {
+                            <button class="btn btn-sm btn-outline-primary me-1"
+                                    onclick="toggleEdit(@msg.Id)">
+                                Edit
+                            </button>
+                        }
+
+                        <form asp-action="DeleteMessage"
+                              asp-controller="Groups"
+                              method="post"
+                              class="d-inline"
+                              onsubmit="return confirm('Sigur vrei să ștergi mesajul?');">
+                            <input type="hidden" name="id" value="@msg.Id" />
+                            <button type="submit"
+                                    class="btn btn-sm btn-outline-danger">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                }
+
+                @* Form edit inline *@
+                @if (msg.UserId == currentUserId)
+                {
+                    <form id="edit-form-@msg.Id"
+                          asp-action="EditMessage"
+                          asp-controller="Groups"
+                          method="post"
+                          style="display:none;"
+                          class="mt-2">
+
+                        <input type="hidden" name="id" value="@msg.Id" />
+                        <input type="hidden" name="groupId" value="@Model.Id" />
+
+                        <textarea name="textContent"
+                      class="form-control mb-1"
+                      rows="2">@msg.TextContent</textarea>
+
+                        <button type="submit"
+                                class="btn btn-sm btn-primary">
+                            Send
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-secondary"
+                                onclick="toggleEdit(@msg.Id)">
+                            Undo
+                        </button>
+                    </form>
+                }
+
+            </div>
+        }
+    }
+</div>
+
+<form asp-action="AddMessage"
+      asp-controller="Groups"
+      method="post">
+
+    <input type="hidden" name="groupId" value="@Model.Id" />
+
+    <textarea name="textContent"
+              class="form-control mb-2"
+              rows="3"
+              placeholder="Write a message..."
+              required></textarea>
+
+    <button type="submit"
+            class="btn btn-primary btn-sm">
+        Send
+    </button>
+</form>
+
+<!--edit mesaj inline-->
+
+@section Scripts {
+    <script>
+        function toggleEdit(id) {
+            const form = document.getElementById(`edit-form-${id}`);
+            form.style.display = form.style.display === "none" ? "block" : "none";
+        }
+    </script>
+}

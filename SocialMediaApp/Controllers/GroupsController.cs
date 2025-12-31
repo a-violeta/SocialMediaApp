@@ -33,7 +33,6 @@ namespace SocialMediaApp.Controllers
             return View(groups);
         }
 
-
         //get: creare grup
 
         [HttpGet]
@@ -253,7 +252,7 @@ namespace SocialMediaApp.Controllers
                 return NotFound();
 
             if (membership.IsModerator)
-                return BadRequest("Moderatorul nu poate părăsi grupul.");
+                return BadRequest("The moderator can not leave the group.");
 
             db.GroupUsers.Remove(membership);
             await db.SaveChangesAsync();
@@ -285,7 +284,7 @@ namespace SocialMediaApp.Controllers
                 return NotFound();
 
             if (membership.IsModerator)
-                return BadRequest("Nu poți elimina un moderator.");
+                return BadRequest("A moderator can not be removed.");
 
             db.GroupUsers.Remove(membership);
             await db.SaveChangesAsync();
@@ -348,6 +347,123 @@ namespace SocialMediaApp.Controllers
             await db.SaveChangesAsync();
 
             return RedirectToAction("Index");
+        }
+
+        //mesaje in grup
+
+        [HttpGet]
+        public async Task<IActionResult> Messages(int groupId)
+        {
+            var group = await db.Groups
+                                .Include(g => g.Users)
+                                .Include(g => g.Messages)
+                                    .ThenInclude(m => m.User)
+                                .FirstOrDefaultAsync(g => g.Id == groupId);
+
+            if (group == null) return NotFound();
+
+            var userId = _userManager.GetUserId(User);
+            bool isMember = group.Users.Any(u => u.UserId == userId);
+
+            if (!isMember) return Forbid();
+
+            ViewBag.IsModerator = group.Users.Any(u => u.UserId == userId && u.IsModerator);
+
+            return View(group); // va folosi Messages.cshtml
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMessage(int groupId, string textContent)
+        {
+            if (string.IsNullOrWhiteSpace(textContent))
+            {
+                TempData["MessageError"] = "The message can not be empty.";
+                return RedirectToAction("Messages", new { groupId });
+            }
+
+            var userId = _userManager.GetUserId(User);
+
+            bool isMember = db.GroupUsers.Any(gu =>
+                gu.GroupId == groupId && gu.UserId == userId);
+
+            if (!isMember)
+                return Forbid();
+
+            var message = new GroupMessage
+            {
+                GroupId = groupId,
+                UserId = userId,
+                TextContent = textContent
+            };
+
+            db.GroupMessages.Add(message);
+            await db.SaveChangesAsync();
+
+            return RedirectToAction("Messages", new { groupId });
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteMessage(int id)
+        {
+            var message = await db.GroupMessages
+                .Include(m => m.Group)
+                .Include(m => m.User)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (message == null) return NotFound();
+
+            var userId = _userManager.GetUserId(User);
+
+            bool isModerator = db.GroupUsers.Any(gu => gu.GroupId == message.GroupId && gu.UserId == userId && gu.IsModerator);
+
+            // doar autorul si moderatorul pot sterge
+            if (message.UserId != userId && !isModerator)
+                return Forbid();
+
+            db.GroupMessages.Remove(message);
+            await db.SaveChangesAsync();
+
+            return RedirectToAction("Messages", new { groupId = message.GroupId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditMessage(int id, int groupId, string textContent)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            // verificam daca utilizatorul este membru al grupului
+            bool isMember = await db.GroupUsers
+                .AnyAsync(gu => gu.GroupId == groupId && gu.UserId == userId);
+
+            if (!isMember)
+                return Forbid();
+
+            // validare text
+            if (string.IsNullOrWhiteSpace(textContent))
+            {
+                TempData["MessageError"] = "The message can not be empty.";
+                return RedirectToAction("Messages", new { groupId });
+            }
+
+            var message = await db.GroupMessages
+                .FirstOrDefaultAsync(m => m.Id == id && m.GroupId == groupId);
+
+            if (message == null)
+                return NotFound();
+
+            // doar autorul poate edita mesajul
+            if (message.UserId != userId)
+                return Forbid();
+
+            message.TextContent = textContent;
+            await db.SaveChangesAsync();
+
+            return RedirectToAction("Messages", new { groupId });
         }
 
     }
