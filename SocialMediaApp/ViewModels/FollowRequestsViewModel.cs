@@ -9,5 +9,7 @@
         public string FollowedId { get; set; }
 
         public DateTime FollowDate { get; set; }
+
+        public bool Accepted { get; set; }
     }
 }

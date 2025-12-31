@@ -44,11 +44,11 @@
             </div>
 
         </div>
-        @*buton follow - momentan nefunctional*@
+        @*buton follow - functional*@
         @if (!ViewBag.IsMe) {
             <div class="mt-3 position-relative w-100">
                 <button 
-                    class="follow-button btn btn-primary"
+                    class="follow-button btn @(ViewBag.IsFollowingConfirmed ? "btn-outline-secondary" : "btn-primary")"
                     data-following="@ViewBag.IsFollowing"
                     data-user-id = "@Model.Id"
                     onclick="toggleFollow(this)">

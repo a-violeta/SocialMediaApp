@@ -55,18 +55,67 @@ async function toggleFollow(button) {
 
     let contentType = response.headers.get("content-type");
 
-    if (!contentType || !contentType.includes("application/json")) {
+    if (!contentType || !contentType.includes('application/json')) {
         window.location.href = '/Identity/Account/Login';
         return;
     }
 
     if (!response.ok) {
-        alert("Something went wrong");
+        alert('Something went wrong');
         return;
     }
 
     const result = await response.json();
 
+    if (!result.isFollowing) {
+        window.location.reload();
+        return;
+    }
+
     button.dataset.following = result.isFollowing;
-    button.textContent = result.isFollowing ? "Unsend follow request" : "Follow";
+    button.textContent = "Unsend follow request";
 }
+
+document.querySelectorAll('.follow-accept').forEach(b => {
+    b.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        let response = await fetch(`/FollowRequests/Accept/${b.dataset.userId}`, {
+            method: 'POST'
+        });
+
+        if (!response.ok) {
+            alert('Something went wrong');
+            return;
+        }
+
+        b.parentElement.innerHTML = 
+            ' <button class="btn btn-secondary" disabled> Accepted </button > '
+
+    });
+});
+
+document.querySelectorAll('.follow-delete').forEach(b => {
+    b.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        let response = await fetch(`/FollowRequests/Delete/${b.dataset.userId}`, {
+            method: 'POST'
+        });
+
+        if (!response.ok) {
+            alert('Something went wrong');
+            return;
+        }
+
+        let message = b.parentElement.parentElement;
+        message.classList.add('bg-secondary-subtle')
+        message.innerText = 'Follow request removed';
+
+    });
+});
+
+document.querySelectorAll('.follow-request').forEach(fr => {
+    let id = fr.firstElementChild.value;
+    fr.addEventListener('click', (event) => {
+        window.location = `/Users/Show/${id}`
+    })
+})

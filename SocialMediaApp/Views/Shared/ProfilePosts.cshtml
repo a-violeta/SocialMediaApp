@@ -1,6 +1,9 @@
 ﻿@model SocialMediaApp.Models.ApplicationUser
 
-@if (Model.ProfileVisibility == "public" || ViewBag.AmIAdmin || ViewBag.IsMe) 
+@if (Model.ProfileVisibility == "public" ||
+            ViewBag.AmIAdmin ||
+            ViewBag.IsMe ||
+            ViewBag.IsFollowingConfirmed) 
 {
     foreach (Post userPost in Model.Posts)
     {
