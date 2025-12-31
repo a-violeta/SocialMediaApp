@@ -24,13 +24,12 @@ namespace SocialMediaApp.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            ApplicationUser temp = await _userManager.GetUserAsync(User);
+            ApplicationUser? temp = await _userManager.GetUserAsync(User);
             string id = await _userManager.GetUserIdAsync(temp);
             var requests = await db.Follows
             .Include(f => f.Follower)
             .Where(f =>
-                f.FollowedId == id &&
-                f.Accepted == false)
+                f.FollowedId == id)
             .Select(f => new FollowRequestsViewModel
             {
                 FollowerId = f.FollowerId,
@@ -38,12 +37,51 @@ namespace SocialMediaApp.Controllers
                 FollowerFirstName = f.Follower.FirstName,
                 FollowerLastName = f.Follower.LastName,
                 FollowerPfp = f.Follower.ProfilePicture,
-                FollowDate = f.Date
+                FollowDate = f.Date,
+                Accepted = f.Accepted
             })
             .OrderByDescending(f => f.FollowDate)
             .ToListAsync();
 
             return View(requests);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Accept(string id)
+        {
+            ApplicationUser? temp = await _userManager.GetUserAsync(User);
+            string followedId = await _userManager.GetUserIdAsync(temp);
+            var request = await db.Follows
+                .Where(f => f.FollowerId == id && 
+                f.FollowedId == followedId)
+                .FirstOrDefaultAsync();
+            if (request == null)
+            {
+                return NotFound();
+            }
+            request.Accepted = true;
+            await db.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Delete(string id)
+        {
+            ApplicationUser? temp = await _userManager.GetUserAsync(User);
+            string followedId = await _userManager.GetUserIdAsync(temp);
+            var request = await db.Follows
+                .Where(f => f.FollowerId == id &&
+                f.FollowedId == followedId)
+                .FirstOrDefaultAsync();
+            if (request == null)
+            {
+                return NotFound();
+            }
+            db.Follows.Remove(request);
+            await db.SaveChangesAsync();
+            return Ok();
         }
     }
 }

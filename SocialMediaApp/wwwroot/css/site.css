@@ -57,6 +57,10 @@ body {
     cursor: default;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
 /* 
     mai jos sunt clasele pentru 
     profilul unui utilizator
