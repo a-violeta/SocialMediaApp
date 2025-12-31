@@ -1,0 +1,10 @@
+﻿@model Group
+
+<h3>Ștergere grup</h3>
+<p>Sigur vrei să ștergi grupul <strong>@Model.Name</strong>?</p>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button type="submit" class="btn btn-danger">Șterge</button>
+    <a asp-action="Show" asp-route-id="@Model.Id" class="btn btn-secondary">Anulează</a>
+</form>
