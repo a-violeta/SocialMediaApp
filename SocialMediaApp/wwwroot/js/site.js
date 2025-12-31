@@ -45,3 +45,28 @@ document.addEventListener('DOMContentLoaded', () => {
     
 });
 
+
+async function toggleFollow(button) {
+    let userId = button.dataset.userId;
+
+    let response = await fetch(`/Users/Follow/${userId}`, {
+        method: 'POST'
+    });
+
+    let contentType = response.headers.get("content-type");
+
+    if (!contentType || !contentType.includes("application/json")) {
+        window.location.href = '/Identity/Account/Login';
+        return;
+    }
+
+    if (!response.ok) {
+        alert("Something went wrong");
+        return;
+    }
+
+    const result = await response.json();
+
+    button.dataset.following = result.isFollowing;
+    button.textContent = result.isFollowing ? "Unsend follow request" : "Follow";
+}

@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Build.Tasks.Deployment.Bootstrapper;
 using Microsoft.EntityFrameworkCore;
 using SocialMediaApp.Data;
 using SocialMediaApp.Models;
 using SocialMediaApp.ViewModels;
-using System.IO;
 
 namespace SocialMediaApp.Controllers
 {
@@ -53,23 +49,65 @@ namespace SocialMediaApp.Controllers
         //afisare user dupa id
         public async Task<ActionResult> Show(string id)
         {
-            ApplicationUser? user = db.Users
+            ApplicationUser? user = await db.Users
                 .Include(u => u.Posts)
                 .Where(u => u.Id == id)
-                .FirstOrDefault();
-            bool isMe = user.Id == _userManager.GetUserId(User);
-            var connectedUser = await _userManager.GetUserAsync(User);
-            bool amIAdmin = await _userManager.IsInRoleAsync(connectedUser, "Admin"); ;
-            ViewBag.IsMe = isMe;
-            ViewBag.AmIAdmin = amIAdmin;
+                .FirstOrDefaultAsync();
             if (user is null)
             {
                 return NotFound();
             }
+            bool isMe = user.Id == _userManager.GetUserId(User);
+            var connectedUser = await _userManager.GetUserAsync(User);
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            var follow = await db.Follows
+                .Where(f => f.FollowerId == currentUserId && f.FollowedId == user.Id)
+                .FirstOrDefaultAsync();
+
+            bool isFollowing = follow != null;
+
+            bool isFollowingConfirmed;
+
+
+            int followerCount = db.Follows.Where(f =>
+            f.FollowerId == currentUserId &&
+            f.FollowedId == user.Id && 
+            f.Accepted == true).Count();
+
+            int followingCount = db.Follows.Where(f =>
+            f.FollowerId == user.Id &&
+            f.FollowedId == currentUserId &&
+            f.Accepted == true).Count();
+
+            if (follow is null)
+            {
+                isFollowingConfirmed = false;
+            }
+
             else
             {
-                return View(user);
+                isFollowingConfirmed = isFollowing && follow.Accepted;
             }
+
+            bool amIAdmin;
+            if (connectedUser is null)
+            {
+                amIAdmin = false;
+            }
+            else
+            {
+                amIAdmin = await _userManager.IsInRoleAsync(connectedUser, "Admin");
+            }
+            ViewBag.IsMe = isMe;
+            ViewBag.AmIAdmin = amIAdmin;
+            ViewBag.IsFollowing = isFollowing;
+            ViewBag.IsFollowingConfirmed = isFollowingConfirmed;
+            ViewBag.FollowerCount = followerCount;
+            ViewBag.FollowingCount = followingCount;
+            return View(user);
+
         }
 
         // editare user e finalizata
@@ -159,9 +197,9 @@ namespace SocialMediaApp.Controllers
         }
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id)
         {
-            var user = db.Users.Find(id);
+            var user = await db.Users.FindAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -171,18 +209,18 @@ namespace SocialMediaApp.Controllers
 
         [HttpPost, ActionName("Delete")]
         [Authorize(Roles = "Admin")]
-        public IActionResult DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(string id)
         {
 
             //teoretic mai trebuie sterse si toate mesajele lui din diferite grupuri sau??
             //in plus trebuie sterse si instantele lui de grup user?
             //si toate intrarile din tabelul follows unde apare el?
-            var user = db.ApplicationUsers
+            var user = await db.ApplicationUsers
                             .Include(u => u.Posts)
                             .Include(u => u.Comments)
                             .Include(u => u.Likes)
                             .Where(u => u.Id == id)
-                            .FirstOrDefault();
+                            .FirstOrDefaultAsync();
 
             if (user is null)
             {
@@ -221,10 +259,46 @@ namespace SocialMediaApp.Controllers
 
             db.ApplicationUsers.Remove(user);
 
-            db.SaveChanges();
+            await db.SaveChangesAsync();
 
             return RedirectToAction("Index", "Home");
 
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Follow(string id)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (currentUserId == id)
+                return BadRequest();
+
+            var existing = await db.Follows
+                .FirstOrDefaultAsync(f =>
+                    f.FollowerId == currentUserId &&
+                    f.FollowedId == id);
+
+            if (existing == null)
+            {
+                db.Follows.Add(new Follows
+                {
+                    FollowerId = currentUserId,
+                    FollowedId = id,
+                    Accepted = false,
+                    Date = DateTime.Now
+                });
+            }
+            else
+            {
+                db.Follows.Remove(existing);
+            }
+
+            await db.SaveChangesAsync();
+
+            var isFollowing = existing == null;
+
+            return Json(new { isFollowing });
         }
     }
 }

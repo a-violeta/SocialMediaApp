@@ -1,26 +1,37 @@
 ﻿@model SocialMediaApp.Models.ApplicationUser
 
-@foreach (Post userPost in Model.Posts)
+@if (Model.ProfileVisibility == "public" || ViewBag.AmIAdmin || ViewBag.IsMe) 
 {
-    <div class="profile-post position-relative d-flex flex-row mt-3 clickable-post" data-url=" @Url.Action("Show", "Posts", new { id = userPost.Id })">
-        <div class="post-pfp-container">
-            <img src="~/images/Profiles/@Model.ProfilePicture"/>
-        </div>
-        <div class="profile-post-info d-flex flex-column text-wrap text-break">
-            <div class="profile-post-username">
-                <b>@Model.FirstName @Model.LastName</b>
+    foreach (Post userPost in Model.Posts)
+    {
+        <div class="profile-post position-relative d-flex flex-row mt-3 clickable-post" data-url=" @Url.Action("Show", "Posts", new { id = userPost.Id })">
+            <div class="post-pfp-container">
+                <img src="~/images/Profiles/@Model.ProfilePicture"/>
             </div>
-            <div class="profile-post-content d-flex flex-column">@userPost.TextContent</div>
-            <div class="post-data d-flex flex-wrap mt-3">
-                <div class="post-options d-flex justify-content-between">
-                    <div class="profile-post-likes d-flex justify-content-between">
-                        <a><i class="bi bi-heart"></i> @userPost.WhoLiked.Count()</a>
+            <div class="profile-post-info d-flex flex-column text-wrap text-break">
+                <div class="profile-post-username">
+                    <b>@Model.FirstName @Model.LastName</b>
+                </div>
+                <div class="profile-post-content d-flex flex-column">@userPost.TextContent</div>
+                <div class="post-data d-flex flex-wrap mt-3">
+                    <div class="post-options d-flex justify-content-between">
+                        <div class="profile-post-likes d-flex justify-content-between">
+                            <a><i class="bi bi-heart"></i> @userPost.WhoLiked.Count()</a>
+                        </div>
+                    </div>
+                    <div class="post-date d-flex">
+                        @userPost.Date
                     </div>
                 </div>
-                <div class="post-date d-flex">
-                    @userPost.Date
-                </div>
             </div>
         </div>
+    }
+}
+
+else
+{
+    <i class="bi bi-lock fs-1 m-auto text-muted"></i>
+    <div class="text-wrap text-break m-auto fs-5 text-muted">
+        This profile is private. Follow to see posts.
     </div>
 }
