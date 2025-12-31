@@ -43,6 +43,19 @@
                                 <a class="nav-link fs-6" asp-area="" asp-controller="Posts" asp-action="New"><i class="bi bi-plus-lg"></i> Adaugare postare</a>
                             </li>
                         }
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link fs-6"
+                                   asp-controller="Groups"
+                                   asp-action="Index">
+                                    <i class="bi bi-people"></i>
+
+                                    Available groups
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                     <form asp-controller="Users"

@@ -1,1 +1,60 @@
-﻿
+﻿@using Microsoft.AspNetCore.Identity
+@model IEnumerable<SocialMediaApp.Models.Group>
+@inject UserManager<ApplicationUser> UserManager
+
+<h2>Groups to join</h2>
+
+<br />
+
+@if (!Model.Any())
+{
+    <p class="text-muted">There are no groups.</p>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var group in Model)
+        {
+            <div class="list-group-item d-flex justify-content-between align-items-center mb-2 p-3 border rounded">
+
+                <!-- Info grup -->
+                <div>
+                    <a asp-controller="Groups" asp-action="Show" asp-route-id="@group.Id">
+                        <strong>@group.Name</strong>
+                    </a>
+                    <p class="mb-1 text-muted">
+                        <i class="bi bi-card-text"></i>
+                        @group.Description
+                    </p>
+                    <small>
+                        <i class="bi bi-people"></i>
+                        @group.Users.Count members
+                    </small>
+                </div>
+
+                <!-- Buton Join / Leave -->
+                <div>
+                    @{
+                        var userId = UserManager.GetUserId(User);
+                        var isMember = group.Users.Any(u => u.UserId == userId);
+                    }
+
+                    @if (isMember)
+                    {
+                        <form asp-action="Leave" method="post" class="d-inline">
+                            <input type="hidden" name="groupId" value="@group.Id" />
+                            <button type="submit" class="btn btn-warning btn-sm">Leave</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="Join" method="post" class="d-inline">
+                            <input type="hidden" name="groupId" value="@group.Id" />
+                            <button type="submit" class="btn btn-success btn-sm">Join</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}

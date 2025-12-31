@@ -22,6 +22,8 @@ namespace SocialMediaApp.Data
         public DbSet<Likes> Likes { get; set; } 
         public DbSet<Post> Posts { get; set; }
         public DbSet<Video> Videos { get; set; }
+        public DbSet<GroupJoinRequest> GroupJoinRequests { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
