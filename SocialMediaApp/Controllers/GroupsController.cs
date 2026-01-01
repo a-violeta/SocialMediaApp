@@ -395,7 +395,8 @@ namespace SocialMediaApp.Controllers
             {
                 GroupId = groupId,
                 UserId = userId,
-                TextContent = textContent
+                TextContent = textContent,
+                CreatedAt = DateTime.Now
             };
 
             db.GroupMessages.Add(message);
