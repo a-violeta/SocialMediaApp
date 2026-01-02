@@ -164,6 +164,9 @@ namespace SocialMediaApp.Models
                     }
                 );
 
+                context.GroupUsers.AddRange(
+                );
+
                 context.SaveChanges();
             }
         }

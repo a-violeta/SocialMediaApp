@@ -27,20 +27,16 @@
                     <ul class="navbar-nav flex-grow-1">
 
                         <li class="nav-item">
-                            <a class="nav-link fs-6" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-house"></i> Acasă</a>
+                            <a class="nav-link fs-6" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-house"></i> Home</a>
                         </li>
 
-                        @if (User.IsInRole("Admin"))
+                        @if (User.IsInRole("Admin") || User.IsInRole("User"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link fs-6" asp-area="" asp-controller="Posts" asp-action="New"><i class="bi bi-plus-lg"> </i>Adăugare postare</a>
+                                <a class="nav-link fs-6" asp-area="" asp-controller="Posts" asp-action="New"><i class="bi bi-plus-lg"></i> Create post</a>
                             </li>
-                        }
-
-                        @if (User.IsInRole("User"))
-                        {
                             <li class="nav-item">
-                                <a class="nav-link fs-6" asp-area="" asp-controller="Posts" asp-action="New"><i class="bi bi-plus-lg"></i> Adaugare postare</a>
+                                <a class="nav-link fs-6" asp-area="" asp-controller="FollowRequests" asp-action="Index"><i class="bi bi-heart"></i> Follow requests</a>
                             </li>
                         }
 

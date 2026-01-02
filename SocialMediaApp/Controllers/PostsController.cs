@@ -42,15 +42,15 @@ namespace SocialMediaApp.Controllers
         // [HttpGet]
 
         [Authorize(Roles = "User,Admin")]
-        public IActionResult Show(int id)
+        public async Task<IActionResult> Show(int id)
         {
-            Post? post = db.Posts
+            Post? post = await db.Posts
                                  .Include(a => a.Comments)
                                  .Include(a => a.User) // userul care a scris articolul
                                  .Include(a => a.Comments)
                                     .ThenInclude(c => c.User) // userii care au scris comentariile
                                  .Where(a => a.Id == id)
-                                 .FirstOrDefault();
+                                 .FirstOrDefaultAsync();
 
             if (post is null)
             {

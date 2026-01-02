@@ -61,6 +61,10 @@ body {
     cursor: pointer;
 }
 
+.w-700px-responsive {
+    width: 700px;
+}
+
 /* 
     mai jos sunt clasele pentru 
     profilul unui utilizator
@@ -119,7 +123,7 @@ body {
     border-radius: 9px;
 }
 
-.profile-post:hover {
+.clickable-post:hover {
     background-color: #fafafa;
 }
 
@@ -161,6 +165,10 @@ body {
 
 .profile-post-likes:hover {
     color: red;
+}
+
+.profile-post-comments {
+    width: 31px;
 }
 
 .post-options {
@@ -301,6 +309,10 @@ body {
     /* requesturi de follow */
 
     .follow-request {
+        width: 100%;
+    }
+
+    .w-700px-responsive {
         width: 100%;
     }
 }

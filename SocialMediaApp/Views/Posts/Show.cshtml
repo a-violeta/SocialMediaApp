@@ -13,32 +13,57 @@
 
 <br />
 
-<div class="card">
-
-    <partial name="PostInfo" model="Model"></partial>
-
-    <!--n am scris afisare butoane si nici este admin, sunt ambele in lab 10-->
-    @if ((ViewBag.AfisareButoane == true && Model.UserId == ViewBag.UserCurent)
-        || ViewBag.EsteAdmin == true)
-    {
-        <div class="d-flex flex-row justify-content-between">
-
-            <a class="btn btn-success" asp-controller="Posts" asp-action="Edit" asp-route-id="@Model.Id">Editeaza postare</a>
-
-            <form method="post" asp-controller="Posts" asp-action="Delete" asp-route-id="@Model.Id">
-
-                <button class="btn btn-danger" type="submit">Sterge postare</button>
-
-            </form>
-
+<div class="w-700px-responsive profile-post position-relative d-flex flex-row mt-3 mb-5 cursor-default me-auto ms-auto">
+    <div class="post-pfp-container">
+        <img src="~/images/Profiles/@Model.User.ProfilePicture" />
+    </div>
+    <div class="profile-post-info d-flex flex-column text-wrap text-break">
+        <div class="profile-post-username">
+            <b>@Model.User.FirstName @Model.User.LastName</b>
         </div>
-    }
-
-
+        <div class="profile-post-content d-flex flex-column">@Model.TextContent</div>
+        <div class="post-data d-flex flex-wrap mt-3">
+            <div class="post-options d-flex">
+                <div class="profile-post-likes d-flex justify-content-between me-3 cursor-pointer">
+                    <a><i class="bi bi-heart"></i> @Model.WhoLiked.Count()</a>
+                </div>
+                <div class="profile-post-comments d-flex justify-content-between">
+                    <a><i class="bi bi-chat-dots"></i> @Model.Comments.Count()</a>
+                </div>
+            </div>
+            <div class="post-date d-flex">
+                @Model.Date
+            </div>
+        </div>
+    </div>
 </div>
 
-<br />
-<br />
+
+@* Afisarea formularului in care se poate adauga un comentariu *@
+
+<div class="d-flex flex-column align-items-center">
+
+    <div class="w-700px-responsive">
+
+        <form method="post" asp-controller="Posts" asp-action="Show">
+
+            <div class="d-flex flex-column">
+
+                <input type="hidden" name="PostId" value="@Model.Id" />
+
+                <label class="text-muted mb-1">Add a comment</label>
+
+                <textarea class="form-control mb-3" name="Content"></textarea>
+
+                <button class="btn btn-primary ms-auto" type="submit">Comment</button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 
 @* Afisare comentarii impreuna cu butoanele de editare si stergere *@
 
@@ -108,43 +133,3 @@
 }
 
 
-@* Afisarea formularului in care se poate adauga un comentariu *@
-
-<div class="container">
-
-    <div class="row">
-
-        <div class="col-md-2"></div>
-
-        <div class="col-md-8">
-
-            <div class="card">
-
-                <form method="post" asp-controller="Posts" asp-action="Show">
-
-                    <div class="card-body">
-
-                        <input type="hidden" name="PostId" value="@Model.Id" />
-
-                        <label>Continut comentariu</label>
-                        <br />
-
-                        <textarea class="form-control" name="Content"></textarea>
-
-                        <br /><br />
-
-                        <button class="btn btn-success " type="submit">Adauga comentariul</button>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-        </div>
-
-        <div class="col-md-2"></div>
-
-    </div>
-
-</div>

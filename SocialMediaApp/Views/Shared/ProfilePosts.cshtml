@@ -17,9 +17,12 @@
                 </div>
                 <div class="profile-post-content d-flex flex-column">@userPost.TextContent</div>
                 <div class="post-data d-flex flex-wrap mt-3">
-                    <div class="post-options d-flex justify-content-between">
-                        <div class="profile-post-likes d-flex justify-content-between">
+                    <div class="post-options d-flex">
+                        <div class="profile-post-likes d-flex justify-content-between me-3">
                             <a><i class="bi bi-heart"></i> @userPost.WhoLiked.Count()</a>
+                        </div>
+                        <div class="profile-post-comments d-flex justify-content-between">
+                            <a><i class="bi bi-chat-dots"></i> @userPost.Comments.Count()</a>
                         </div>
                     </div>
                     <div class="post-date d-flex">
