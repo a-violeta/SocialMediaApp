@@ -20,10 +20,14 @@
 @{
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     bool isModerator = ViewBag.IsModerator == true;
+    DateTime? lastDate = null;
+    var today = DateTime.Today;
+    var yesterday = today.AddDays(-1);
 }
 
+
 <div class="border rounded p-3 mb-3"
-     style="max-height: 450px; overflow-y: auto;">
+     style="max-height: 350px; overflow-y: auto;">
 
     @if (!Model.Messages.Any())
     {
@@ -31,79 +35,121 @@
     }
     else
     {
-        @foreach (var msg in Model.Messages.OrderByDescending(m => m.Id))
+        @foreach (var msg in Model.Messages.OrderBy(m => m.CreatedAt))
         {
-            <div class="border-bottom pb-2 mb-2">
-
-                <strong>
-                    <a asp-controller="Users"
-                       asp-action="Show"
-                       asp-route-id="@msg.UserId">
-                        @msg.User?.FirstName @msg.User?.LastName
-                    </a>
-                </strong>
-
-                <p class="mb-1">@msg.TextContent</p>
-
-                @* Butoane edit / delete *@
-                @if (msg.UserId == currentUserId || isModerator)
-                {
-                    <div class="text-end">
-
-                        @if (msg.UserId == currentUserId)
+            //afisam data calendaristica doar cand se schimba ziua
+            if (lastDate == null || msg.CreatedAt.Date != lastDate.Value.Date)
+            {
+                <div class="text-center text-muted small my-3">
+                    @{
+                        if (msg.CreatedAt.Date == today)
                         {
-                            <button class="btn btn-sm btn-outline-primary me-1"
-                                    onclick="toggleEdit(@msg.Id)">
-                                Edit
-                            </button>
+                            <span>Today</span>
                         }
+                        else if (msg.CreatedAt.Date == yesterday)
+                        {
+                            <span>Yesterday</span>
+                        }
+                        else
+                        {
+                            <span>
+                                <!--asta cred ca afiseaza data in romana direct-->
+                                @msg.CreatedAt.ToString("dd MMM yyyy")
+                            </span>
+                        }
+                    }
+                </div>
 
-                        <form asp-action="DeleteMessage"
-                              asp-controller="Groups"
-                              method="post"
-                              class="d-inline"
-                              onsubmit="return confirm('Are you sure you want to delete the message?');">
-                            <input type="hidden" name="id" value="@msg.Id" />
-                            <button type="submit"
-                                    class="btn btn-sm btn-outline-danger">
-                                Delete
-                            </button>
-                        </form>
+                lastDate = msg.CreatedAt.Date;
+            }
+
+            bool isOwnMessage = msg.UserId == currentUserId;
+
+            <div class="d-flex mb-2 @(isOwnMessage ? "justify-content-end" : "justify-content-start")">
+                <div class="d-flex @(isOwnMessage ? "flex-row-reverse" : "")" style="max-width:75%;">
+
+                    <!-- poza profil -->
+                    <img src="~/images/Profiles/@(msg.User?.ProfilePicture ?? "default.png")"
+                         class="rounded-circle me-2 ms-2"
+                         style="width:40px;height:40px;object-fit:cover;" />
+
+
+                    <div class="p-2 rounded @(isOwnMessage ? "bg-primary text-white" : "bg-light")">
+
+                        <small class="fw-bold d-block">
+                            @msg.User?.FirstName
+                        </small>
+
+                        <div>@msg.TextContent</div>
+
+                        <small class="text-muted d-block text-end">
+                            @msg.CreatedAt.ToString("HH:mm")
+                        </small>
+
+                        @* butoane edit / delete *@
+                        @if (isOwnMessage || isModerator)
+                        {
+                            <div class="text-end mt-1">
+
+                                @if (isOwnMessage)
+                                {
+                                    <button class="btn btn-sm btn-outline-light me-1"
+                                            onclick="toggleEdit(@msg.Id)">
+                                        Edit
+                                    </button>
+                                }
+
+                                <form asp-action="DeleteMessage"
+                                      asp-controller="Groups"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Are you sure you want to delete the message?');">
+                                    <input type="hidden" name="id" value="@msg.Id" />
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                          </div>
+                        }
                     </div>
-                }
-
-                @* Form edit inline *@
-                @if (msg.UserId == currentUserId)
-                {
-                    <form id="edit-form-@msg.Id"
-                          asp-action="EditMessage"
-                          asp-controller="Groups"
-                          method="post"
-                          style="display:none;"
-                          class="mt-2">
-
-                        <input type="hidden" name="id" value="@msg.Id" />
-                        <input type="hidden" name="groupId" value="@Model.Id" />
-
-                        <textarea name="textContent"
-                      class="form-control mb-1"
-                      rows="2">@msg.TextContent</textarea>
-
-                        <button type="submit"
-                                class="btn btn-sm btn-primary">
-                            Send
-                        </button>
-
-                        <button type="button"
-                                class="btn btn-sm btn-secondary"
-                                onclick="toggleEdit(@msg.Id)">
-                            Undo
-                        </button>
-                    </form>
-                }
-
+                </div>
             </div>
+
+            @* Form edit inline *@
+            @if (isOwnMessage)
+            {
+                <form id="edit-form-@msg.Id"
+                      asp-action="EditMessage"
+                      asp-controller="Groups"
+                      method="post"
+                      style="display:none;"
+                      class="mb-3 text-end">
+
+                    <input type="hidden" name="id" value="@msg.Id" />
+                    <input type="hidden" name="groupId" value="@Model.Id" />
+
+                    <textarea name="textContent"
+                              class="form-control mb-1"
+                              rows="2">
+                        @msg.TextContent
+                    </textarea>
+
+                    <button type="submit"
+                            class="btn btn-sm btn-primary">
+                        Send
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-sm btn-secondary"
+                            onclick="toggleEdit(@msg.Id)">
+                        Cancel
+                    </button>
+                </form>
+            }
+
         }
+
     }
 </div>
 

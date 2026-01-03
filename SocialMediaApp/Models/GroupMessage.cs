@@ -13,6 +13,9 @@ namespace SocialMediaApp.Models
 
         public string TextContent { get; set; }
 
+        //adaugare data mesajului, nu am folosit o decat in messages view
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
 
         // Proprietati de navigatie: 2
 
