@@ -263,6 +263,58 @@ body {
     background-color: #fafafa
 }
 
+/* postari */
+
+#postButton {
+    height: 37px;
+}
+
+#imagePreview img,
+#videoPreview video {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+/* imagini si videoclipuri postari */
+.media-container {
+    height: 500px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.media-container img,
+.media-container video {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 12px;
+    object-fit: contain;
+}
+
+.arrow-left-button,
+.arrow-right-button {
+    cursor: pointer;
+    user-select: none;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 43px;
+    height: 43px;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+    line-height: 0;
+    font-size: 24px;
+}
+
+.arrow-left-button:hover,
+.arrow-right-button:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
 /* responsive */
 
 @media screen and (max-width: 768px) {
@@ -321,5 +373,4 @@ body {
     .user-profile {
         width: 100%;
     }
-    /* requesturi de follow */
 }

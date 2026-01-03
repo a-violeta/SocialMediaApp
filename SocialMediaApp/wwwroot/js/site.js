@@ -14,7 +14,7 @@ document.querySelectorAll('.clickable-post').forEach(post => {
 
 document.addEventListener('DOMContentLoaded', () => {
     let previewPicture = document.getElementById('previewPfp');
-
+    if (previewPicture == null) return;
     document.getElementById('inputPfp').addEventListener('change', (event) => {
         if (!event.target.files[0]) return;
         previewPicture.src = URL.createObjectURL(event.target.files[0]);
@@ -27,16 +27,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     firstNameInput.addEventListener('input', () => {
         previewName.innerHTML =
-             "<b>" + firstNameInput.value + ' ' + lastNameInput.value + "</b>";
+             '<b>' + firstNameInput.value + ' ' + lastNameInput.value + '</b>';
     });
 
     lastNameInput.addEventListener('input', () => {
         previewName.innerHTML =
-            "<b>" + firstNameInput.value + ' ' + lastNameInput.value + "</b>";
+            '<b>' + firstNameInput.value + ' ' + lastNameInput.value + '</b>';
     });
 
-    let previewDescription = document.getElementById("previewDescription");
-    let descriptionInput = document.getElementById("descriptionInput");
+    let previewDescription = document.getElementById('previewDescription');
+    let descriptionInput = document.getElementById('descriptionInput');
 
     descriptionInput.addEventListener('input', () => {
         previewDescription.textContent =
@@ -53,7 +53,7 @@ async function toggleFollow(button) {
         method: 'POST'
     });
 
-    let contentType = response.headers.get("content-type");
+    let contentType = response.headers.get('content-type');
 
     if (!contentType || !contentType.includes('application/json')) {
         window.location.href = '/Identity/Account/Login';
@@ -73,7 +73,7 @@ async function toggleFollow(button) {
     }
 
     button.dataset.following = result.isFollowing;
-    button.textContent = "Unsend follow request";
+    button.textContent = 'Unsend follow request';
 }
 
 document.querySelectorAll('.follow-accept').forEach(b => {
@@ -119,3 +119,145 @@ document.querySelectorAll('.follow-request').forEach(fr => {
         window.location = `/Users/Show/${id}`
     })
 })
+
+const imageBtn = document.getElementById("imageBtn");
+const videoBtn = document.getElementById("videoBtn");
+
+const imageInput = document.getElementById("imageInput");
+const videoInput = document.getElementById("videoInput");
+
+const imageSection = document.getElementById("imageSection");
+const videoSection = document.getElementById("videoSection");
+
+const imagePreview = document.getElementById("imagePreview");
+const videoPreview = document.getElementById("videoPreview");
+
+const clearImages = document.getElementById("clearImages");
+const clearVideos = document.getElementById("clearVideos");
+
+if (imageBtn != null) {
+    imageBtn.addEventListener('click', () => imageInput.click());
+}
+if (videoBtn != null) {
+    videoBtn.addEventListener('click', () => videoInput.click());
+}
+
+if (imageInput != null) {
+    imageInput.addEventListener('change', () => {
+        const files = Array.from(imageInput.files);
+        imagePreview.innerHTML = "";
+
+        if (files.length === 0) {
+            imageSection.classList.add("d-none");
+            return;
+        }
+
+        imageSection.classList.remove("d-none");
+
+        files.forEach(file => {
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(file);
+            imagePreview.appendChild(img);
+        });
+    });
+}
+if (videoInput != null) {
+    videoInput.addEventListener('change', () => {
+        const files = Array.from(videoInput.files);
+        videoPreview.innerHTML = "";
+
+        if (files.length === 0) {
+            videoSection.classList.add("d-none");
+            return;
+        }
+
+        videoSection.classList.remove("d-none");
+
+        files.forEach(file => {
+            const video = document.createElement("video");
+            video.src = URL.createObjectURL(file);
+            video.controls = true;
+            videoPreview.appendChild(video);
+        });
+    });
+
+}
+
+if (clearImages != null) {
+    clearImages.addEventListener("click", () => {
+        imageInput.value = "";
+        imagePreview.innerHTML = "";
+        imageSection.classList.add("d-none");
+    });
+}
+
+
+if (clearVideos != null) {
+    clearVideos.addEventListener("click", () => {
+        videoInput.value = "";
+        videoPreview.innerHTML = "";
+        videoSection.classList.add("d-none");
+    });
+}
+
+// afisare imagini / videoclipuri din postari
+document.addEventListener("DOMContentLoaded", () => {
+
+    const container = document.getElementById("mediaContainer");
+    console.log("salut");
+    if (!container) return;
+
+    const postId = container.dataset.postId;
+    let mediaList = [];
+    let currentIndex = 0;
+    console.log("am intrat");
+
+    fetch(`/Posts/GetMedia?id=${postId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            mediaList = [
+                ...(data.images || []).map(i => ({ type: 'image', url: i.url })),
+                ...(data.videos || []).map(v => ({ type: 'video', url: v.url }))
+            ];
+
+            if (mediaList.length === 0) return;
+
+            showMedia(currentIndex);
+        })
+        .catch(err => console.error("Failed to load media", err));
+
+    console.log(mediaList);
+    function showMedia(index) {
+        const item = mediaList[index];
+        container.innerHTML = '';
+
+        if (item.type === 'image') {
+            const img = document.createElement('img');
+            img.src = item.url;
+            container.appendChild(img);
+        } else if (item.type === 'video') {
+            const video = document.createElement('video');
+            video.src = item.url;
+            video.controls = true;
+            container.appendChild(video);
+        }
+    }
+
+
+    const prevBtn = document.querySelector(".arrow-left-button");
+    const nextBtn = document.querySelector(".arrow-right-button");
+
+    prevBtn?.addEventListener("click", () => {
+        if (!mediaList.length) return;
+        currentIndex = (currentIndex - 1 + mediaList.length) % mediaList.length;
+        showMedia(currentIndex);
+    });
+
+    nextBtn?.addEventListener("click", () => {
+        if (!mediaList.length) return;
+        currentIndex = (currentIndex + 1) % mediaList.length;
+        showMedia(currentIndex);
+    });
+
+});

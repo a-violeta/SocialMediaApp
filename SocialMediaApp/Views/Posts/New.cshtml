@@ -1,33 +1,62 @@
-﻿@model SocialMediaApp.Models.Post
+﻿@model SocialMediaApp.ViewModels.AddPostViewModel
 
-<h2 class="text-center mt-5">Adaugare postare</h2>
-
-<br />
-
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-6 offset-3">
-
-            <form method="post" asp-action="New" asp-controller="Posts">
-
-                <div asp-validation-summary="All" class="text-danger"></div>
-
-                <div class="form-group">
-
-                    <label class="form-label">Continut postare</label>
-                    <br />
-
-                    <textarea class="form-control"></textarea>
-
-                    <br /><br />
-                </div>
-                
-                <br />
-                <button class="btn btn-success" type="submit">Adauga postare</button>
-
-            </form>
-        </div>
+<div class="d-flex flex-column align-items-center">
+    <div class="fs-2 mb-4 fw-semibold">
+        Create a new post
     </div>
+
+    <form class="d-flex flex-column w-700px-responsive"
+          method="post"
+          enctype="multipart/form-data"
+          asp-action="New"
+          asp-controller="Posts">
+
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <div class="form-group mb-2">
+            <label class="form-label text-muted">What's happening?</label>
+            <textarea class="form-control" rows="5" name="TextContent"></textarea>
+        </div>
+
+        <div id="imageSection" class="mb-2 d-none">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <div id="imageTitle" class="text-muted small">Images</div>
+            </div>
+            <div id="imagePreview" class="d-flex flex-wrap gap-2 mb-1"></div>
+            <button id="clearImages" type="button" class="btn btn-sm btn-outline-danger">Clear</button>
+        </div>
+
+        <div id="videoSection" class="mb-2 d-none">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <div id="videoTitle" class="text-muted small">Videos</div>
+            </div>
+            <div id="videoPreview" class="d-flex flex-wrap gap-2 mb-1"></div>
+            <button id="clearVideos" type="button" class="btn btn-sm btn-outline-danger">Clear</button>
+        </div>
+
+        <input type="file"
+               id="imageInput"
+               name="Images"
+               accept="image/*"
+               multiple
+               hidden />
+
+        <input type="file"
+               id="videoInput"
+               name="Videos"
+               accept="video/*"
+               multiple
+               hidden />
+
+        <div class="d-flex mb-1 align-items-center">
+            <i id="imageBtn" class="bi bi-image fs-5 text-primary me-3 cursor-pointer"></i>
+            <i id="videoBtn" class="bi bi-play-btn fs-5 text-primary cursor-pointer"></i>
+
+            <button class="btn btn-primary ms-auto" type="submit">
+                Post
+            </button>
+        </div>
+    </form>
 </div>
 
 

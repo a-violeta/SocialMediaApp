@@ -6,6 +6,7 @@ namespace SocialMediaApp.Models
     {
         [Key]
         public int Id { get; set; }
+
         public string? TextContent { get; set; }
 
         public DateTime Date { get; set; }
@@ -14,7 +15,7 @@ namespace SocialMediaApp.Models
 
         // Proprietati de navigatie: 5
 
-        public virtual ApplicationUser User { get; set; }
+        public virtual ApplicationUser? User { get; set; }
 
         public virtual ICollection<Comment> Comments { get; set; } = [];
 

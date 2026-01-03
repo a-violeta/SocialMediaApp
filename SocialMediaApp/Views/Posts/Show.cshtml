@@ -17,11 +17,31 @@
     <div class="post-pfp-container">
         <img src="~/images/Profiles/@Model.User.ProfilePicture" />
     </div>
-    <div class="profile-post-info d-flex flex-column text-wrap text-break">
+    <div class="profile-post-info d-flex flex-column text-wrap text-break position-relative">
         <div class="profile-post-username">
             <b>@Model.User.FirstName @Model.User.LastName</b>
         </div>
         <div class="profile-post-content d-flex flex-column">@Model.TextContent</div>
+        @if (Model.Images.Any() || Model.Videos.Any())
+        {
+            <div class="post-media d-flex w-100 position-relative">
+                <div class="arrow-left w-25 d-flex justify-content-center align-items-center">
+                    <div class="arrow-left-button d-flex cursor-pointer">
+                        &lt;
+                    </div>
+                </div>
+
+                <div id="mediaContainer" class="media-container d-flex justify-content-center align-items-center" data-post-id="@Model.Id">
+                    
+                </div>
+
+                <div class="arrow-right w-25 d-flex justify-content-center align-items-center">
+                    <div class="arrow-right-button d-flex cursor-pointer">
+                        &gt;
+                    </div>
+                </div>
+            </div>
+        }
         <div class="post-data d-flex flex-wrap mt-3">
             <div class="post-options d-flex">
                 <div class="profile-post-likes d-flex justify-content-between me-3 cursor-pointer">

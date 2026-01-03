@@ -24,4 +24,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\Posts\" />
+    <Folder Include="wwwroot\videos\Posts\" />
+  </ItemGroup>
+
 </Project>
