@@ -15,6 +15,13 @@ namespace SocialMediaApp.Controllers
 
         public IActionResult Index()
         {
+            // daca user ul e logat => feed
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Feed", "Users");
+            }
+
+            // altfel => landing page
             return View();
         }
 

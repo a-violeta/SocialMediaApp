@@ -339,5 +339,32 @@ namespace SocialMediaApp.Controllers
 
             return Json(new { isFollowing });
         }
+
+        [Authorize]
+        public async Task<IActionResult> Feed()
+        {
+            var currentUserId = _userManager.GetUserId(User);
+
+            //ID urile utilizatorilor urmariti
+            var followingIds = await db.Follows
+                .Where(f => f.FollowerId == currentUserId && f.Accepted)
+                .Select(f => f.FollowedId)
+                .ToListAsync();
+
+            //ia postarile lor, incluzand tot necesar
+            var posts = await db.Posts
+                .Include(p => p.User)
+                .Include(p => p.Images)
+                .Include(p => p.Videos)
+                .Include(p => p.WhoLiked)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                .Where(p => followingIds.Contains(p.UserId))
+                .OrderByDescending(p => p.Date)
+                .ToListAsync();
+
+            return View(posts); // Views/Users/Feed.cshtml
+        }
+
     }
 }
