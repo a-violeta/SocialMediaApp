@@ -1,0 +1,126 @@
+﻿@model SocialMediaApp.ViewModels.AddPostViewModel
+
+@{
+    ViewData["Title"] = "Edit post";
+    var post = ViewBag.Post;
+}
+
+<h3>Edit post</h3>
+
+@* Mesaje de succes / eroare *@
+@if (TempData["message"] != null)
+{
+    var messageType = TempData["messageType"]?.ToString() ?? "info";
+    <div class="alert alert-@messageType alert-dismissible fade show" role="alert">
+        @TempData["message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@* afisez validation summary daca exista erori *@
+@if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
+{
+    <div asp-validation-summary="All" class="alert alert-danger"></div>
+}
+
+
+<form asp-action="Edit"
+      asp-route-id="@ViewBag.PostId"
+      method="post"
+      enctype="multipart/form-data">
+
+    @Html.AntiForgeryToken()
+
+    <!-- TEXT -->
+    <div class="mb-3">
+        <label asp-for="TextContent" class="form-label">Text</label>
+        <textarea asp-for="TextContent"
+                  class="form-control"
+                  rows="4"></textarea>
+        <span asp-validation-for="TextContent" class="text-danger"></span>
+    </div>
+
+    <!-- IMAGINI EXISTENTE -->
+    @if (Model.ExistingImageIds?.Any() == true)
+    {
+        <div class="mb-3">
+            <label class="form-label">Existing images (check to remove)</label>
+            <div class="row">
+                @foreach (var img in post.Images)
+                {
+                    <div class="col-auto text-center mb-2">
+                        <img src="~/images/Posts/@img.ImageUrl"
+                             class="img-thumbnail"
+                             style="width:100px;height:100px;object-fit:cover;" />
+                        <div class="form-check mt-1">
+                            <input type="checkbox"
+                                   class="form-check-input"
+                                   name="RemoveImageIds"
+                                   value="@img.Id" />
+                            <label class="form-check-label">Remove</label>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- VIDEO EXISTENTE -->
+    @if (Model.ExistingVideoIds?.Any() == true)
+    {
+        <div class="mb-3">
+            <label class="form-label">Existing videos (check to remove)</label>
+            <div class="row">
+                @foreach (var vid in post.Videos)
+                {
+                    <div class="col-auto text-center mb-2">
+                        <video width="160" height="90" controls class="d-block mb-1">
+                            <source src="~/videos/Posts/@vid.VideoUrl" type="video/mp4">
+                        </video>
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input"
+                                   name="RemoveVideoIds"
+                                   value="@vid.Id" />
+                            <label class="form-check-label">Remove</label>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+
+    <!-- IMAGINI NOI -->
+    <div class="mb-3">
+        <label class="form-label">Add new images</label>
+        <input type="file"
+               name="Images"
+               multiple
+               accept="image/*"
+               class="form-control" />
+    </div>
+
+    <!-- VIDEO NOI -->
+    <div class="mb-3">
+        <label class="form-label">Add new videos</label>
+        <input type="file"
+               name="Videos"
+               multiple
+               accept="video/*"
+               class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Save changes
+    </button>
+
+    <a asp-action="Show"
+       asp-route-id="@ViewBag.PostId"
+       class="btn btn-secondary ms-2">
+        Cancel
+    </a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

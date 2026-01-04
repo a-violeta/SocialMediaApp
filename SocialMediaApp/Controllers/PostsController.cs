@@ -18,19 +18,6 @@ namespace SocialMediaApp.Controllers
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
         private readonly IWebHostEnvironment _webHostEnvironment = environment;
 
-        /*
-        public PostsController(
-            ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager
-        )
-        {
-            db = context;
-            _userManager = userManager;
-            _roleManager = roleManager;
-        }
-        */
-
         //am lasat un view gol posts/index, dar nu sunt sigura ca e folositor
         /*
         public IActionResult Index()
@@ -73,11 +60,13 @@ namespace SocialMediaApp.Controllers
                 ViewBag.Alert = TempData["messageType"];
             }
 
+            var currentUserId = _userManager.GetUserId(User);
+            ViewBag.HasLiked = post.WhoLiked.Any(l => l.UserId == currentUserId);
+
             return View(post);
         }
 
         // Formularul in care se vor completa datele unei postari
-        // momentan nu suporta partea video si imagine
         
         // [HttpGet] se executa implicit
 
@@ -171,5 +160,230 @@ namespace SocialMediaApp.Controllers
 
             return Json(post);
         }
+
+        [Authorize]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var post = await db.Posts
+                .Include(p => p.Images)
+                .Include(p => p.Videos)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (post == null)
+                return NotFound();
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (post.UserId != currentUserId)
+                return Forbid();
+
+            var model = new AddPostViewModel
+            {
+                TextContent = post.TextContent,
+                // nu reincarcam imaginile aici (IFormFile nu se poate)
+                ExistingImageIds = post.Images.Select(i => i.Id).ToList(),
+                ExistingVideoIds = post.Videos.Select(v => v.Id).ToList()
+            };
+
+            ViewBag.PostId = post.Id;
+            //ca sa afisam imaginile/video reale in view
+            ViewBag.Post = post;
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, AddPostViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["message"] = "The post could not be saved.";
+                TempData["messageType"] = "danger";
+                ViewBag.PostId = id;
+                return View(model);
+            }
+
+            var post = await db.Posts
+                .Include(p => p.Images)
+                .Include(p => p.Videos)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (post == null)
+                return NotFound();
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (post.UserId != currentUserId)
+                return Forbid();
+
+            // edit text
+            post.TextContent = model.TextContent;
+            post.Date = DateTime.Now;
+
+            // stergere imagini selectate
+            if (model.RemoveImageIds != null)
+            {
+                foreach (var imgId in model.RemoveImageIds)
+                {
+                    var img = post.Images.FirstOrDefault(i => i.Id == imgId);
+                    if (img != null)
+                    {
+                        // stergere fizica din wwwroot
+                        string path = Path.Combine(_webHostEnvironment.WebRootPath, "images", "Posts", img.ImageUrl);
+                        if (System.IO.File.Exists(path))
+                            System.IO.File.Delete(path);
+
+                        post.Images.Remove(img);
+                        db.Images.Remove(img);
+                    }
+                }
+            }
+
+            // stergere videoclipuri selectate
+            if (model.RemoveVideoIds != null)
+            {
+                foreach (var vidId in model.RemoveVideoIds)
+                {
+                    var vid = post.Videos.FirstOrDefault(v => v.Id == vidId);
+                    if (vid != null)
+                    {
+                        // stergere fizica din wwwroot
+                        string path = Path.Combine(_webHostEnvironment.WebRootPath, "videos", "Posts", vid.VideoUrl);
+                        if (System.IO.File.Exists(path))
+                            System.IO.File.Delete(path);
+
+                        post.Videos.Remove(vid);
+                        db.Videos.Remove(vid);
+                    }
+                }
+            }
+
+
+            // adaugare imagini noi (optional)
+            foreach (var image in model.Images ?? Enumerable.Empty<IFormFile>())
+            {
+                string fileName = Guid.NewGuid() + "_" + image.FileName;
+                string path = Path.Combine(_webHostEnvironment.WebRootPath, "images", "Posts", fileName);
+
+                using var fs = new FileStream(path, FileMode.Create);
+                await image.CopyToAsync(fs);
+
+                post.Images.Add(new Image { ImageUrl = fileName });
+            }
+
+            // adaugare videoclipuri noi (optional)
+            foreach (var video in model.Videos ?? Enumerable.Empty<IFormFile>())
+            {
+                string fileName = Guid.NewGuid() + "_" + video.FileName;
+                string path = Path.Combine(_webHostEnvironment.WebRootPath, "videos", "Posts", fileName);
+
+                using var fs = new FileStream(path, FileMode.Create);
+                await video.CopyToAsync(fs);
+
+                post.Videos.Add(new Video { VideoUrl = fileName });
+            }
+
+            await db.SaveChangesAsync();
+
+            TempData["message"] = "The post has been successufully edited.";
+            TempData["messageType"] = "success";
+
+            return RedirectToAction("Show", new { id = post.Id });
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            // gaseste postarea cu toate fisierele
+            var post = await db.Posts
+                .Include(p => p.Images)
+                .Include(p => p.Videos)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (post == null)
+                return NotFound();
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            // verifica daca e proprietarul sau admin
+            bool isAdmin = User.IsInRole("Admin");
+
+            if (post.UserId != currentUserId && !isAdmin)
+                return Forbid();
+
+            // sterge fisierele fizice
+            foreach (var img in post.Images)
+            {
+                var path = Path.Combine(_webHostEnvironment.WebRootPath, "images", "Posts", img.ImageUrl);
+                if (System.IO.File.Exists(path))
+                    System.IO.File.Delete(path);
+            }
+
+            foreach (var vid in post.Videos)
+            {
+                var path = Path.Combine(_webHostEnvironment.WebRootPath, "videos", "Posts", vid.VideoUrl);
+                if (System.IO.File.Exists(path))
+                    System.IO.File.Delete(path);
+            }
+
+            // sterge like urile
+            var likes = await db.Likes.Where(l => l.PostId == post.Id).ToListAsync();
+            db.Likes.RemoveRange(likes);
+
+            // sterge comentariile
+            var comments = await db.Comments.Where(c => c.PostId == post.Id).ToListAsync();
+            db.Comments.RemoveRange(comments);
+
+            // sterge postarea din db
+            db.Posts.Remove(post);
+            await db.SaveChangesAsync();
+
+            //TempData["message"] = "The post has been successfully removed.";
+            //TempData["messageType"] = "success";
+
+            return RedirectToAction("Show", "Users", new { id = post.UserId });
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> ToggleLike(int postId)
+        {
+            var userId = _userManager.GetUserId(User);
+            var post = await db.Posts
+                .Include(p => p.WhoLiked)
+                .FirstOrDefaultAsync(p => p.Id == postId);
+
+            if (post == null)
+                return NotFound();
+
+            // verifica daca utilizatorul a dat deja like
+            var existingLike = post.WhoLiked.FirstOrDefault(l => l.UserId == userId);
+
+            if (existingLike != null)
+            {
+                // unlike
+                db.Remove(existingLike);
+            }
+            else
+            {
+                // like
+                var like = new Likes
+                {
+                    PostId = postId,
+                    UserId = userId
+                };
+                db.Add(like);
+            }
+
+            await db.SaveChangesAsync();
+
+            // returneaza JSON cu nr actualizat de like uri
+            var likesCount = post.WhoLiked.Count;
+            return Json(new { likesCount });
+        }
+
     }
 }

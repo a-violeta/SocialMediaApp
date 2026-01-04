@@ -19,27 +19,43 @@ namespace SocialMediaApp.Validations
                 return ValidationResult.Success;
             }
 
+            /*
             if (value is IFormFile file)
             {
                 return ValidateFile(file);
             }
+            */
 
             if (value is ICollection<IFormFile> files)
             {
-                foreach (IFormFile f in files)
-                {
-                    ValidationResult? result = ValidateFile(f);
-                    if (ValidateFile(f) != ValidationResult.Success)
-                    {
-                        return ValidateFile(f);
-                    }
+                if (files.Count == 0)
                     return ValidationResult.Success;
+
+                foreach (var file in files)
+                {
+                    if (!types.Contains(file.ContentType))
+                    {
+                        return new ValidationResult(
+                            "Allowed file types: PNG, JPEG, GIF, WebP, BMP."
+                        );
+                    }
                 }
+                return ValidationResult.Success;
             }
 
-            return new ValidationResult("Allowed file types: PNG, JPEG, GIF, WebP, BMP.");
+            if (value is IFormFile f)
+            {
+                if (!types.Contains(f.ContentType))
+                {
+                    return new ValidationResult(
+                        "Allowed file types: PNG, JPEG, GIF, WebP, BMP."
+                    );
+                }
+                return ValidationResult.Success;
+            }
+            return ValidationResult.Success;
         }
-
+        /*
         private ValidationResult? ValidateFile(IFormFile file)
         {
             if (types.Contains(file.ContentType))
@@ -48,5 +64,6 @@ namespace SocialMediaApp.Validations
             }
             return new ValidationResult("Allowed file types: PNG, JPEG, GIF, WebP, BMP.");
         }
+        */
     }
 }

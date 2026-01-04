@@ -89,6 +89,7 @@ namespace SocialMediaApp.Controllers
         {
             ApplicationUser? user = await db.Users
                 .Include(u => u.Posts)
+                    .ThenInclude(p => p.WhoLiked)
                 .Where(u => u.Id == id)
                 .FirstOrDefaultAsync();
             if (user is null)

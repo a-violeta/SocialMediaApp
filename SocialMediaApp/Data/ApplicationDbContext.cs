@@ -59,6 +59,11 @@ namespace SocialMediaApp.Data
                 .WithMany(p => p.WhoLiked)
                 .HasForeignKey(l => l.PostId);
 
+            // index unic ca sa nu poata un user sa dea like de doua ori la aceeasi postare
+            modelBuilder.Entity<Likes>()
+                .HasIndex(l => new { l.UserId, l.PostId })
+                .IsUnique();
+
             modelBuilder.Entity<GroupUser>()
                 .HasKey(gu => new { gu.UserId, gu.GroupId });
 

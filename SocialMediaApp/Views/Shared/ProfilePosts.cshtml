@@ -1,4 +1,5 @@
-﻿@model SocialMediaApp.Models.ApplicationUser
+﻿@using System.Security.Claims
+@model SocialMediaApp.Models.ApplicationUser
 
 @if (Model.ProfileVisibility == "public" ||
             ViewBag.AmIAdmin ||
@@ -19,8 +20,10 @@
                 <div class="post-data d-flex flex-wrap mt-3">
                     <div class="post-options d-flex">
                         <div class="profile-post-likes d-flex justify-content-between me-3">
-                            <a><i class="bi bi-heart"></i> @userPost.WhoLiked.Count()</a>
+                            <i class="bi @(userPost.WhoLiked.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) ? "bi-heart-fill text-danger" : "bi-heart") me-1"></i>
+                            <span>@userPost.WhoLiked.Count()</span>
                         </div>
+
                         <div class="profile-post-comments d-flex justify-content-between">
                             <a><i class="bi bi-chat-dots"></i> @userPost.Comments.Count()</a>
                         </div>
