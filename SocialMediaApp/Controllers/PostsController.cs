@@ -355,6 +355,7 @@ namespace SocialMediaApp.Controllers
             var post = await db.Posts
                 .Include(p => p.WhoLiked)
                 .FirstOrDefaultAsync(p => p.Id == postId);
+            bool liked = false;
 
             if (post == null)
                 return NotFound();
@@ -376,13 +377,14 @@ namespace SocialMediaApp.Controllers
                     UserId = userId
                 };
                 db.Add(like);
+                liked = true;
             }
 
             await db.SaveChangesAsync();
 
             // returneaza JSON cu nr actualizat de like uri
             var likesCount = post.WhoLiked.Count;
-            return Json(new { likesCount });
+            return Json(new { likesCount, liked });
         }
 
     }

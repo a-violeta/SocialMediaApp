@@ -10,8 +10,21 @@
         .then(res => res.json())
         .then(data => {
             element.querySelector('.likes-count').innerText = data.likesCount;
-            const heart = element.querySelector('i');
-            if (data.liked) heart.classList.add('text-danger');
-            else heart.classList.remove('text-danger');
+            const heart = element.querySelector('.heart-button');
+            if (data.liked) {
+                heart.classList.add('text-danger');
+                heart.classList.remove('bi-heart');
+                heart.classList.add('bi-heart-fill');
+            }
+            else {
+                heart.classList.add('bi-heart');
+                heart.classList.remove('text-danger');
+                heart.classList.remove('bi-heart-fill');
+            }
+
         });
+}
+
+function StopEventPropagation(event) {
+    event.stopPropagation();
 }

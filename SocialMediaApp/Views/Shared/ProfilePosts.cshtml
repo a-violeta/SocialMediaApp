@@ -19,9 +19,12 @@
                 <div class="profile-post-content d-flex flex-column">@userPost.TextContent</div>
                 <div class="post-data d-flex flex-wrap mt-3">
                     <div class="post-options d-flex">
-                        <div class="profile-post-likes d-flex justify-content-between me-3">
-                            <i class="bi @(userPost.WhoLiked.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) ? "bi-heart-fill text-danger" : "bi-heart") me-1"></i>
-                            <span>@userPost.WhoLiked.Count()</span>
+                        <div class="profile-post-likes d-flex justify-content-between me-3 cursor-pointer"
+                             data-post-id="@userPost.Id"
+                             onclick="StopEventPropagation(event);
+                             toggleLike(this)">
+                            <i class="heart-button bi @(userPost.WhoLiked.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) ? "bi-heart-fill text-danger" : "bi-heart") me-1"></i>
+                            <span class="likes-count">@userPost.WhoLiked.Count()</span>
                         </div>
 
                         <div class="profile-post-comments d-flex justify-content-between">

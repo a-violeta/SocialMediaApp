@@ -28,12 +28,25 @@
 
 <div class="w-700px-responsive profile-post position-relative d-flex flex-row mt-3 mb-5 cursor-default me-auto ms-auto">
     <div class="post-pfp-container">
-        <img src="~/images/Profiles/@Model.User.ProfilePicture" />
+        @if (Model.User != null)
+        {
+            <img src="~/images/Profiles/@Model.User.ProfilePicture" />
+        }
+        else
+        {
+            <img src="~/images/Profiles/default-pfp.jpg" />
+        }
     </div>
     <div class="profile-post-info d-flex flex-column text-wrap text-break position-relative">
         <div class="profile-post-username">
-            <b>@Model.User.FirstName @Model.User.LastName</b>
-
+            @if (Model.User != null) 
+            {
+                <b>@Model.User.FirstName @Model.User.LastName</b>
+            }
+            else
+            {
+                <b>Deleted user</b>
+            }
             @if (currentUserId == Model.UserId)
             {
                 <a asp-action="Edit"
@@ -81,8 +94,8 @@
                 <div class="profile-post-likes d-flex justify-content-between me-3 cursor-pointer"
                      data-post-id="@Model.Id"
                      onclick="toggleLike(this)">
-                     <!--stupizenia asta tot nu se coloreaza cand dau like, dar asta e-->
-                    <i class="bi @(ViewBag.HasLiked ? "bi-heart-fill text-danger" : "bi-heart")"></i>
+                     <!--stupizenia asta        se coloreaza cand dau like,  a  a  a  -->
+                    <i class="heart-button bi @(ViewBag.HasLiked ? "bi-heart-fill text-danger" : "bi-heart")"></i>
                      <span class="likes-count">@Model.WhoLiked.Count()</span>
                 </div>
                 <div class="profile-post-comments d-flex justify-content-between">

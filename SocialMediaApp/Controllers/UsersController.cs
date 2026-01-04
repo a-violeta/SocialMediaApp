@@ -111,13 +111,11 @@ namespace SocialMediaApp.Controllers
 
 
             int followerCount = db.Follows.Where(f =>
-            f.FollowerId == currentUserId &&
             f.FollowedId == user.Id && 
             f.Accepted == true).Count();
 
             int followingCount = db.Follows.Where(f =>
             f.FollowerId == user.Id &&
-            f.FollowedId == currentUserId &&
             f.Accepted == true).Count();
 
             if (follow is null)
