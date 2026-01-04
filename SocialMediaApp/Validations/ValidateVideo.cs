@@ -23,17 +23,15 @@ namespace SocialMediaApp.Validations
                 return ValidateFile(file);
             }
 
-            if (value is ICollection<IFormFile> files)
+            if (value is IEnumerable<IFormFile> files)
             {
-                foreach (IFormFile f in files)
+                foreach (var f in files)
                 {
-                    ValidationResult? result = ValidateFile(f);
-                    if (ValidateFile(f) != ValidationResult.Success)
-                    {
-                        return ValidateFile(f);
-                    }
-                    return ValidationResult.Success;
+                    var result = ValidateFile(f);
+                    if (result != ValidationResult.Success)
+                        return result; // returnează eroarea pentru primul fișier invalid
                 }
+                return ValidationResult.Success;
             }
 
             return new ValidationResult("Allowed file types: MP4, WebM, OGG, MOV");

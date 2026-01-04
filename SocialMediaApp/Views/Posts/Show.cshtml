@@ -1,14 +1,27 @@
 ﻿@model SocialMediaApp.Models.Post
+@using System.Security.Claims
 
+@{
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    bool isAdmin = User.IsInRole("Admin");
+}
 
-@* Afisarea unei postari, dar cred ca nu e gata pt ca nu afiseaza totul despre o postare*@
+@* Afisarea unei postari*@
 
 <!--verific daca am vreun mesaj de afisat pt utilizator-->
 @if (TempData["message"] != null)
 {
-    <div class="alert @ViewBag.Alert p-3 rounded-3 text-center mb-5">
-        @ViewBag.Message
+    var messageType = TempData["messageType"]?.ToString() ?? "info";
+    <div class="alert alert-@messageType alert-dismissible fade show" role="alert">
+        @TempData["message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+}
+
+@* afisez validation summary daca exista erori *@
+@if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.SelectMany(v => v.Errors).Any())
+{
+    <div asp-validation-summary="All" class="alert alert-danger"></div>
 }
 
 <br />
@@ -20,6 +33,27 @@
     <div class="profile-post-info d-flex flex-column text-wrap text-break position-relative">
         <div class="profile-post-username">
             <b>@Model.User.FirstName @Model.User.LastName</b>
+
+            @if (currentUserId == Model.UserId)
+            {
+                <a asp-action="Edit"
+                   asp-controller="Posts"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-sm btn-outline-primary">
+                    Edit
+                </a>
+            }
+
+            @if (currentUserId == Model.UserId || isAdmin)
+            {
+                <form asp-action="Delete" asp-controller="Posts" method="post"
+                      onsubmit="return confirm('Are you sure you want to delete this post?');"
+                      class="d-inline ms-2">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+            }
+
         </div>
         <div class="profile-post-content d-flex flex-column">@Model.TextContent</div>
         @if (Model.Images.Any() || Model.Videos.Any())
@@ -44,8 +78,12 @@
         }
         <div class="post-data d-flex flex-wrap mt-3">
             <div class="post-options d-flex">
-                <div class="profile-post-likes d-flex justify-content-between me-3 cursor-pointer">
-                    <a><i class="bi bi-heart"></i> @Model.WhoLiked.Count()</a>
+                <div class="profile-post-likes d-flex justify-content-between me-3 cursor-pointer"
+                     data-post-id="@Model.Id"
+                     onclick="toggleLike(this)">
+                     <!--stupizenia asta tot nu se coloreaza cand dau like, dar asta e-->
+                    <i class="bi @(ViewBag.HasLiked ? "bi-heart-fill text-danger" : "bi-heart")"></i>
+                     <span class="likes-count">@Model.WhoLiked.Count()</span>
                 </div>
                 <div class="profile-post-comments d-flex justify-content-between">
                     <a><i class="bi bi-chat-dots"></i> @Model.Comments.Count()</a>
@@ -151,5 +189,3 @@
 
     </div>
 }
-
-
