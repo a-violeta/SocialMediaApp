@@ -203,32 +203,10 @@ if (clearVideos != null) {
 // afisare imagini / videoclipuri din postari
 document.addEventListener("DOMContentLoaded", () => {
 
-    const container = document.getElementById("mediaContainer");
-    console.log("salut");
-    if (!container) return;
+    const containers = document.querySelectorAll(".media-container");
+    if (containers.length == 0) return;
 
-    const postId = container.dataset.postId;
-    let mediaList = [];
-    let currentIndex = 0;
-    console.log("am intrat");
-
-    fetch(`/Posts/GetMedia?id=${postId}`)
-        .then(res => res.json())
-        .then(data => {
-
-            mediaList = [
-                ...(data.images || []).map(i => ({ type: 'image', url: i.url })),
-                ...(data.videos || []).map(v => ({ type: 'video', url: v.url }))
-            ];
-
-            if (mediaList.length === 0) return;
-
-            showMedia(currentIndex);
-        })
-        .catch(err => console.error("Failed to load media", err));
-
-    console.log(mediaList);
-    function showMedia(index) {
+    function showMedia(index, container, mediaList) {
         const item = mediaList[index];
         container.innerHTML = '';
 
@@ -243,25 +221,40 @@ document.addEventListener("DOMContentLoaded", () => {
             container.appendChild(video);
         }
     }
+    containers.forEach(async (container) => {
+        const postId = container.dataset.postId;
+        let mediaList = [];
+        let currentIndex = 0;
+        fetch(`/Posts/GetMedia?id=${postId}`)
+            .then(res => res.json())
+            .then(data => {
 
+                mediaList = [
+                    ...(data.images || []).map(i => ({ type: 'image', url: i.url })),
+                    ...(data.videos || []).map(v => ({ type: 'video', url: v.url }))
+                ];
 
-    const prevBtn = document.querySelector(".arrow-left-button");
-    const nextBtn = document.querySelector(".arrow-right-button");
+                if (mediaList.length === 0) return;
+                showMedia(currentIndex, container, mediaList);
+            })
+            .catch(err => console.error("Failed to load media", err));
 
-    prevBtn?.addEventListener("click", () => {
-        if (!mediaList.length) return;
-        currentIndex = (currentIndex - 1 + mediaList.length) % mediaList.length;
-        showMedia(currentIndex);
+        const postMedia = container.closest(".post-media");
+        const prevBtn = postMedia.querySelector(".arrow-left-button");
+        const nextBtn = postMedia.querySelector(".arrow-right-button");
+
+        prevBtn?.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (!mediaList.length) return;
+            currentIndex = (currentIndex - 1 + mediaList.length) % mediaList.length;
+            showMedia(currentIndex, container, mediaList);
+        });
+
+        nextBtn?.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (!mediaList.length) return;
+            currentIndex = (currentIndex + 1) % mediaList.length;
+            showMedia(currentIndex, container, mediaList);
+        });
     });
-
-    nextBtn?.addEventListener("click", () => {
-        if (!mediaList.length) return;
-        currentIndex = (currentIndex + 1) % mediaList.length;
-        showMedia(currentIndex);
-    });
-
 });
-
-// like-uri pe postari
-
-

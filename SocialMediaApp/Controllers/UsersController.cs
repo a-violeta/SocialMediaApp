@@ -88,8 +88,12 @@ namespace SocialMediaApp.Controllers
         public async Task<ActionResult> Show(string id)
         {
             ApplicationUser? user = await db.Users
-                .Include(u => u.Posts)
+                .Include(u => u.Posts.OrderByDescending(p => p.Date))
                     .ThenInclude(p => p.WhoLiked)
+                .Include(u => u.Posts)
+                    .ThenInclude(p => p.Videos)
+                .Include(u => u.Posts)
+                    .ThenInclude(p => p.Images)
                 .Where(u => u.Id == id)
                 .FirstOrDefaultAsync();
             if (user is null)

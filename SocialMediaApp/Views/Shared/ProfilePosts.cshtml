@@ -17,6 +17,30 @@
                     <b>@Model.FirstName @Model.LastName</b>
                 </div>
                 <div class="profile-post-content d-flex flex-column">@userPost.TextContent</div>
+                @if (userPost.Images.Any() || userPost.Videos.Any())
+                {
+                    <div class="post-media d-flex w-100 position-relative">
+                        @if (userPost.Images.Count() + userPost.Videos.Count() > 1)
+                        {
+                            <div class="arrow-left w-25 d-flex justify-content-center align-items-center">
+                                <div class="arrow-left-button d-flex cursor-pointer">
+                                    &lt;
+                                </div>
+                            </div>
+                        }
+
+                        <div id="mediaContainer" class="media-container d-flex justify-content-center align-items-center" data-post-id="@userPost.Id">
+                        </div>
+                        @if (userPost.Images.Count() + userPost.Videos.Count() > 1)
+                        {
+                            <div class="arrow-right w-25 d-flex justify-content-center align-items-center">
+                                <div class="arrow-right-button d-flex cursor-pointer">
+                                    &gt;
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
                 <div class="post-data d-flex flex-wrap mt-3">
                     <div class="post-options d-flex">
                         <div class="profile-post-likes d-flex justify-content-between me-3 cursor-pointer"

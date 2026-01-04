@@ -280,7 +280,8 @@ body {
 
 /* imagini si videoclipuri postari */
 .media-container {
-    height: 500px;
+    min-height: 300px;
+    max-height: 400px;
     width: 100%;
     display: flex;
     justify-content: center;
