@@ -160,6 +160,7 @@ namespace SocialMediaApp.Areas.Identity.Pages.Account.Manage
                     }
                     db.Videos.Remove(video);
                 }
+                db.Posts.Remove(post);
             }
 
             // stergem follow-urile 

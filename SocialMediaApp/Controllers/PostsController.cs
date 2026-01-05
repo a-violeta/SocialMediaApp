@@ -49,38 +49,41 @@ namespace SocialMediaApp.Controllers
             {
                 return NotFound();
             }
-            bool isMe = post.UserId == _userManager.GetUserId(User);
-            var connectedUser = await _userManager.GetUserAsync(User);
             var currentUserId = _userManager.GetUserId(User);
-            bool isFollowingConfirmed;
-            var follow = await db.Follows
-                .Where(f => f.FollowerId == currentUserId && f.FollowedId == post.UserId)
-                .FirstOrDefaultAsync();
+            if (post.User.ProfileVisibility == "private")
+            {
+                bool isMe = post.UserId == _userManager.GetUserId(User);
+                var connectedUser = await _userManager.GetUserAsync(User);
+                bool isFollowingConfirmed;
+                var follow = await db.Follows
+                    .Where(f => f.FollowerId == currentUserId && f.FollowedId == post.UserId)
+                    .FirstOrDefaultAsync();
 
-            bool isFollowing = follow != null;
-            if (follow is null)
-            {
-                isFollowingConfirmed = false;
-            }
+                bool isFollowing = follow != null;
+                if (follow is null)
+                {
+                    isFollowingConfirmed = false;
+                }
 
-            else
-            {
-                isFollowingConfirmed = isFollowing && follow.Accepted;
-            }
+                else
+                {
+                    isFollowingConfirmed = isFollowing && follow.Accepted;
+                }
 
-            bool amIAdmin;
-            if (connectedUser is null)
-            {
-                amIAdmin = false;
-            }
-            else
-            {
-                amIAdmin = await _userManager.IsInRoleAsync(connectedUser, "Admin");
-            }
+                bool amIAdmin;
+                if (connectedUser is null)
+                {
+                    amIAdmin = false;
+                }
+                else
+                {
+                    amIAdmin = await _userManager.IsInRoleAsync(connectedUser, "Admin");
+                }
 
-            if (!amIAdmin && !isFollowingConfirmed && !isMe)
-            {
-                return RedirectToAction("Show", "Users", new { id = post.UserId });
+                if (!amIAdmin && !isFollowingConfirmed && !isMe)
+                {
+                    return RedirectToAction("Show", "Users", new { id = post.UserId });
+                }
             }
             //SetAccessRights();
             //metoda asta e din lab 10 dar n am adaugat o inca

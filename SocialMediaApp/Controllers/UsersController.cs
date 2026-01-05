@@ -329,6 +329,7 @@ namespace SocialMediaApp.Controllers
                     }
                     db.Videos.Remove(video);
                 }
+                db.Posts.Remove(post);
             }
 
             // stergem follow-urile
