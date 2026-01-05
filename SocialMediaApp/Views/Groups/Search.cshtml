@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "Search Groups";
+}
+
+<h3>Search Groups</h3>
+
+<form asp-action="Search" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <input type="text" name="query" class="form-control" placeholder="Enter search term" />
+    </div>
+
+    <div class="mb-3">
+        <select name="searchBy" class="form-select">
+            <option value="true">By Name</option>
+            <option value="false">By ID</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-info mt-2">
+        @ViewBag.Message
+    </div>
+}

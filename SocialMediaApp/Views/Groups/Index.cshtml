@@ -37,9 +37,10 @@ else
                     @{
                         var userId = UserManager.GetUserId(User);
                         var isMember = group.Users.Any(u => u.UserId == userId);
+                        var isModerator = group.Users.Any(u => u.IsModerator);
                     }
 
-                    @if (isMember)
+                    @if (isMember && !isModerator)
                     {
                         <form asp-action="Leave" method="post" class="d-inline">
                             <input type="hidden" name="groupId" value="@group.Id" />
@@ -48,10 +49,13 @@ else
                     }
                     else
                     {
-                        <form asp-action="Join" method="post" class="d-inline">
-                            <input type="hidden" name="groupId" value="@group.Id" />
-                            <button type="submit" class="btn btn-success btn-sm">Join</button>
-                        </form>
+                        if (!isMember)
+                        {
+                            <form asp-action="Join" method="post" class="d-inline">
+                                <input type="hidden" name="groupId" value="@group.Id" />
+                                <button type="submit" class="btn btn-success btn-sm">Join</button>
+                            </form>
+                        }
                     }
                 </div>
             </div>

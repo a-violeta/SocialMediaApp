@@ -76,6 +76,12 @@ namespace SocialMediaApp.Data
                 .HasOne(gu => gu.Group)
                 .WithMany(g => g.Users)
                 .HasForeignKey(g => g.GroupId);
+
+            modelBuilder.Entity<GroupMessage>()
+                .HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.SetNull);//mesaj cu user null
         }
     }
 }

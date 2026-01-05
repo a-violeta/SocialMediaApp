@@ -80,8 +80,8 @@ namespace SocialMediaApp.Controllers
             var group = db.Groups
                 .Include(g => g.Users)
                     .ThenInclude(gu => gu.User)
-                .Include(g => g.Messages)
-                    .ThenInclude(m => m.User)
+                //.Include(g => g.Messages)
+                    //.ThenInclude(m => m.User)
                 .FirstOrDefault(g => g.Id == id);
 
             if (group == null)
@@ -236,7 +236,7 @@ namespace SocialMediaApp.Controllers
         }
 
         //parasire grup
-        //moderatorul nu poate parasi (discutabil daca modificam sau nu)
+        //cand moderatorul paraseste se alege altul daca exista, altfel se sterge grupul
 
         [Authorize]
         [HttpPost]
@@ -246,20 +246,49 @@ namespace SocialMediaApp.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Unauthorized();
 
-            var membership = db.GroupUsers
-                .FirstOrDefault(gu => gu.GroupId == groupId && gu.UserId == userId);
+            var membership = await db.GroupUsers
+                .Include(gu => gu.Group)
+                    .ThenInclude(g => g.Users)
+                .FirstOrDefaultAsync(gu => gu.GroupId == groupId && gu.UserId == userId);
 
             if (membership == null)
                 return NotFound();
 
-            if (membership.IsModerator)
-                return BadRequest("The moderator can not leave the group.");
+            var group = membership.Group;
 
-            db.GroupUsers.Remove(membership);
+            if (membership.IsModerator)
+            {
+                // ceilalti membri ai grupului
+                var otherMembers = group.Users
+                    .Where(u => u.UserId != userId)
+                    .OrderBy(u => u.JoinDate)
+                    .ToList();
+
+                if (otherMembers.Any())
+                {
+                    // cel mai vechi devine moderator
+                    otherMembers.First().IsModerator = true;
+
+                    db.GroupUsers.Remove(membership);
+                }
+                else
+                {
+                    // nu mai e nimeni -> stergem grupul
+                    db.GroupUsers.Remove(membership);
+                    db.Groups.Remove(group);
+                }
+            }
+            else
+            {
+                // userul normal se sterge normal
+                db.GroupUsers.Remove(membership);
+            }
+
             await db.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
+
 
         [Authorize]
         [HttpPost]
@@ -466,6 +495,36 @@ namespace SocialMediaApp.Controllers
             await db.SaveChangesAsync();
 
             return RedirectToAction("Messages", new { groupId });
+        }
+
+        [HttpGet]
+        public IActionResult Search()
+        {
+            // afisează pagina de search goala
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Search(string query, bool searchBy)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return View(new List<Group>()); // sau un ViewModel
+
+            IQueryable<Group> groups = db.Groups;
+
+            if (searchBy) // true = search by Name
+                groups = groups.Where(g => g.Name.Contains(query));
+            else // search by Id
+            {
+                if (int.TryParse(query, out int id))
+                    groups = groups.Where(g => g.Id == id);
+                else
+                    groups = groups.Where(g => false); // ID invalid
+            }
+
+            var results = await groups.ToListAsync();
+            return View("SearchResults", results); // trimitem doar lista de grupuri
         }
 
     }

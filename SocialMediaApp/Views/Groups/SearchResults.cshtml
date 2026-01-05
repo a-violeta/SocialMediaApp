@@ -1,0 +1,27 @@
+﻿@model List<SocialMediaApp.Models.Group>
+
+@{
+    ViewData["Title"] = "Search Results";
+}
+
+<h3>Search Results</h3>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">No groups found.</div>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var group in Model)
+        {
+            <a asp-controller="Groups"
+               asp-action="Show"
+               asp-route-id="@group.Id"
+               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                @group.Name
+                <span class="badge bg-secondary rounded-pill">@group.Users.Count()</span>
+            </a>
+        }
+    </div>
+}

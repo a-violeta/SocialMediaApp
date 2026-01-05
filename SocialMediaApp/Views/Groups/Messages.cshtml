@@ -68,21 +68,36 @@
             <div class="d-flex mb-2 @(isOwnMessage ? "justify-content-end" : "justify-content-start")">
                 <div class="d-flex @(isOwnMessage ? "flex-row-reverse" : "")" style="max-width:75%;">
 
-                    <!-- poza profil -->
-                    <a asp-controller = "Users"
+                    @if (msg.User != null)
+                    {
+                        <!-- poza profil -->
+                        <a asp-controller = "Users"
                         asp-action= "Show"
                         asp-route-id = "@msg.UserId">
-                        <img src="~/images/Profiles/@(msg.User?.ProfilePicture ?? "default.png")"
+                        <img src="~/images/Profiles/@msg.User.ProfilePicture"
                              class="rounded-circle me-2 ms-2"
                              style="width:40px;height:40px;object-fit:cover;" />
-                    </a>
-
+                        </a>
+                    }
+                    else
+                    {
+                        <img src="~/images/Profiles/default-pfp.jpg"
+                             class="rounded-circle me-2 ms-2 opacity-50"
+                             style="width:40px;height:40px;object-fit:cover;" />
+                    }
 
                     <div class="p-2 rounded @(isOwnMessage ? "bg-primary text-white" : "bg-light")">
 
-                        <small class="fw-bold d-block">
-                            @msg.User?.FirstName
-                        </small>
+                        @if (msg.User != null)
+                        {
+                            <small class="fw-bold d-block">
+                                @msg.User?.FirstName
+                            </small>
+                        }
+                        else
+                        {
+                            <small class="text-muted">Deleted user</small>
+                        }
 
                         <div>@msg.TextContent</div>
 
