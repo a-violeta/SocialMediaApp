@@ -1,24 +1,4 @@
-﻿/*
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using SocialMediaApp.Data;
-using SocialMediaApp.Models;
-
-namespace SocialMediaApp.Controllers
-{
-    public class CommentsController(ApplicationDbContext context) : Controller
-    {
-        private readonly ApplicationDbContext db = context;
-        public IActionResult Index()
-        {
-            return View();
-        }
-    }
-}
-
-*/
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
