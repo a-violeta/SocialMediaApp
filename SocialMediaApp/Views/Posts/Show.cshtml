@@ -167,12 +167,17 @@
                     <p>@comm.Content</p>
 
                     @if (comm.User != null)
-                    {
-                        <i class="bi bi-person"> @comm.User.UserName</i>
+                    {   
+                        <a asp-controller = "Users"
+                            asp-action = "Show"
+                            asp-route-id = "@comm.UserId"
+                            class="text-decoration-none text-dark">
+                            <i class="bi bi-person"> @comm.User.FirstName @comm.User.LastName</i>
+                        </a>
                     }
                     else
                     {
-                        <i class="bi bi-person text-muted"> Deleted user</i>
+                        <i class="bi bi-person text-muted"> Deleted user </i>
                     }
                 </div>
                 <br>
