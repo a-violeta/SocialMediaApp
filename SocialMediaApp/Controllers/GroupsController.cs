@@ -340,7 +340,7 @@ namespace SocialMediaApp.Controllers
             if (!group.Users.Any(gu => gu.UserId == userId && gu.IsModerator))
                 return Forbid();
 
-            return View(group); // view simplu cu mesaj: "Sigur vrei să ștergi grupul?"
+            return View(group);
         }
 
         [HttpPost]

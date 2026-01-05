@@ -316,6 +316,30 @@ body {
     background: rgba(0, 0, 0, 0.8);
 }
 
+/* emoji background decorativ la mainpage*/
+
+.emoji-wall {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    align-items: center;
+    justify-items: center;
+    font-size: 2.8rem;
+    opacity: 0.07;
+    pointer-events: none;
+    z-index: -1;
+    user-select: none;
+}
+
+    .emoji-wall span {
+        display: block;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+
 /* responsive */
 
 @media screen and (max-width: 768px) {
