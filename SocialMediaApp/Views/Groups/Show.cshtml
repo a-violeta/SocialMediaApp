@@ -145,14 +145,29 @@
 <!--buton parasire grup-->
 @if (User.Identity.IsAuthenticated)
 {
-    if (membership != null && !membership.IsModerator)
+    if (membership != null)
     {
-        <form asp-action="Leave" method="post">
-            <input type="hidden" name="groupId" value="@Model.Id" />
-            <button class="btn btn-outline-danger btn-sm">
-                Leave group
-            </button>
-        </form>
+        if (!membership.IsModerator)
+        {
+            <form asp-action="Leave" method="post">
+                <input type="hidden" name="groupId" value="@Model.Id" />
+                <button class="btn btn-outline-danger btn-sm">
+                    Leave group
+                </button>
+            </form>
+        }
+        else
+        {
+            <form asp-action="Leave"
+                  method="post"
+                  onsubmit="return confirmModeratorLeave(@ViewBag.IsModerator.ToString().ToLower())">
+                <input type="hidden" name="groupId" value="@Model.Id" />
+                <button class="btn btn-outline-danger btn-sm">
+                    Leave group
+                </button>
+            </form>
+
+        }
     }
 }
 
@@ -174,4 +189,21 @@
     </form>
 
     </div>
+}
+
+
+@section Scripts {
+    <script>
+        function confirmModeratorLeave(isModerator) {
+            if (!isModerator) return true;
+
+            return confirm(
+                "You are the moderator of this group.\n\n" +
+                "If you leave:\n" +
+                "• the moderator role will be transferred to the oldest member\n" +
+                "• OR the group will be deleted if no members remain\n\n" +
+                "Do you want to continue?"
+            );
+        }
+    </script>
 }

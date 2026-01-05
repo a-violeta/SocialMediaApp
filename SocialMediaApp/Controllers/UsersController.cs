@@ -89,6 +89,8 @@ namespace SocialMediaApp.Controllers
         {
             ApplicationUser? user = await db.Users
                 .Include(u => u.Posts.OrderByDescending(p => p.Date))
+                    .ThenInclude(p => p.Comments)
+                .Include(u => u.Posts)
                     .ThenInclude(p => p.WhoLiked)
                 .Include(u => u.Posts)
                     .ThenInclude(p => p.Videos)

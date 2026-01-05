@@ -111,7 +111,7 @@
                 <div class="profile-post-likes d-flex justify-content-between me-3 cursor-pointer"
                      data-post-id="@Model.Id"
                      onclick="toggleLike(this)">
-                     <!--stupizenia asta        se coloreaza cand dau like,  a  a  a  -->
+                     
                     <i class="heart-button bi @(ViewBag.HasLiked ? "bi-heart-fill text-danger" : "bi-heart")"></i>
                      <span class="likes-count">@Model.WhoLiked.Count()</span>
                 </div>
@@ -133,7 +133,7 @@
 
     <div class="w-700px-responsive">
 
-        <form method="post" asp-controller="Posts" asp-action="Show">
+        <form method="post" asp-controller="Comments" asp-action="New">
 
             <div class="d-flex flex-column">
 
@@ -164,58 +164,46 @@
             <div class="col-md-8">
 
                 <div>
-
                     <p>@comm.Content</p>
 
-                    @if(comm.User != null)
+                    @if (comm.User != null)
                     {
-                        <strong><i class="bi bi-person"> @comm.User.UserName</i></strong>
+                        <i class="bi bi-person"> @comm.User.UserName</i>
                     }
-
+                    else
+                    {
+                        <i class="bi bi-person text-muted"> Deleted user</i>
+                    }
                 </div>
                 <br>
-                <!--doar userul care a scris poate sa editeze sau sa stearga comentariul-->
 
-                @if (comm.UserId == ViewBag.UserCurent)
+                @* butoane edit/delete *@
+                @if ((comm.UserId != null && comm.UserId == currentUserId) || isAdmin)
                 {
-                    <div class="d-flex">
-                        <div>
-                            <a class="btn btn-outline-primary" asp-controller="Comments" asp-action="Edit" asp-route-id="@comm.Id">
-                                <i class="bi bi-pencil-square"></i> Editeaza
+                    <div class="d-flex gap-2">
+
+                        @* doar autorul poate edita *@
+                        @if (comm.UserId != null && comm.UserId == currentUserId)
+                        {
+                            <a class="btn btn-outline-primary btn-sm" asp-controller="Comments" asp-action="Edit" asp-route-id="@comm.Id">
+                                <i class="bi bi-pencil-square"></i> Edit
                             </a>
+                        }
 
-                        </div>
-                        <div>
-                            <form method="post" asp-controller="Comments" asp-action="Delete" asp-route-id="@comm.Id">
+                        @* autorul si admin pot sterge *@
+                        <form method="post" asp-controller="Comments" asp-action="Delete" asp-route-id="@comm.Id">
+                            <button class="btn btn-outline-danger btn-sm" type="submit">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </form>
 
-                                <button class="btn btn-outline-danger" type="submit"><i class="bi bi-trash"></i>Sterge</button>
-
-                            </form>
-                        </div>
-                    </div>
-                }
-
-                <!--admin poate sa stearga orice comentariu-->
-                @if (ViewBag.EsteAdmin == true)
-                {
-                    <div class="d-flex">
-                        <div>
-                            <form method="post" asp-controller="Comments" asp-action="Delete" asp-route-id="@comm.Id">
-
-                                <button class="btn btn-outline-danger" type="submit"><i class="bi bi-trash"></i>Sterge</button>
-
-                            </form>
-                        </div>
                     </div>
                 }
 
                 <br />
 
             </div>
-
             <div class="col-md-2"></div>
-
         </div>
-
     </div>
 }
