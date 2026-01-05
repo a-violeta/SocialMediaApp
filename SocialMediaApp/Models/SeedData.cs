@@ -87,7 +87,7 @@ namespace SocialMediaApp.Models
 
                         FirstName = "Userul",
                         LastName = "Secund",
-                        ProfileVisibility = "privat",
+                        ProfileVisibility = "private",
                         Description = "Utilizator cu cont privat",
                         ProfilePicture = "pfp-user2.png"
                     }

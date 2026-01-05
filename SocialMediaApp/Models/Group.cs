@@ -11,10 +11,12 @@ namespace SocialMediaApp.Models
         [Required(ErrorMessage = "Grupul trebuie să aibă o descriere")]
         public string? Description { get; set; }
 
-        // Proprietati de navigatie: 2
+        // Proprietati de navigatie: 3
 
         public virtual ICollection<GroupUser> Users { get; set; } = [];
 
         public virtual ICollection<GroupMessage> Messages { get; set; } = [];
+
+        public virtual ICollection<GroupJoinRequest> JoinRequests { get; set; } = [];
     }
 }

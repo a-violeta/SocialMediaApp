@@ -69,9 +69,13 @@
                 <div class="d-flex @(isOwnMessage ? "flex-row-reverse" : "")" style="max-width:75%;">
 
                     <!-- poza profil -->
-                    <img src="~/images/Profiles/@(msg.User?.ProfilePicture ?? "default.png")"
-                         class="rounded-circle me-2 ms-2"
-                         style="width:40px;height:40px;object-fit:cover;" />
+                    <a asp-controller = "Users"
+                        asp-action= "Show"
+                        asp-route-id = "@msg.UserId">
+                        <img src="~/images/Profiles/@(msg.User?.ProfilePicture ?? "default.png")"
+                             class="rounded-circle me-2 ms-2"
+                             style="width:40px;height:40px;object-fit:cover;" />
+                    </a>
 
 
                     <div class="p-2 rounded @(isOwnMessage ? "bg-primary text-white" : "bg-light")">
@@ -82,7 +86,7 @@
 
                         <div>@msg.TextContent</div>
 
-                        <small class="text-muted d-block text-end">
+                        <small class="text-light d-block text-end">
                             @msg.CreatedAt.ToString("HH:mm")
                         </small>
 
@@ -93,9 +97,9 @@
 
                                 @if (isOwnMessage)
                                 {
-                                    <button class="btn btn-sm btn-outline-light me-1"
+                                    <button class="btn btn-sm text-light me-1"
                                             onclick="toggleEdit(@msg.Id)">
-                                        Edit
+                                        <i class="bi bi-pencil-fill"></i>
                                     </button>
                                 }
 
@@ -106,8 +110,8 @@
                                       onsubmit="return confirm('Are you sure you want to delete the message?');">
                                     <input type="hidden" name="id" value="@msg.Id" />
                                     <button type="submit"
-                                            class="btn btn-sm btn-outline-danger">
-                                        Delete
+                                            class="btn btn-sm text-danger">
+                                        <i class="bi bi-trash3-fill"></i>
                                     </button>
                                 </form>
                           </div>

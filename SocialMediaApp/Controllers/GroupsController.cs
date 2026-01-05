@@ -209,6 +209,7 @@ namespace SocialMediaApp.Controllers
             {
                 GroupId = request.GroupId,
                 UserId = request.UserId,
+                JoinDate = DateTime.Now,
                 IsModerator = false
             };
 

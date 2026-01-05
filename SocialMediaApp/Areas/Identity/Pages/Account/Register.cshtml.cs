@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using SocialMediaApp.Models;
+using SocialMediaApp.Validations;
 
 namespace SocialMediaApp.Areas.Identity.Pages.Account
 {
@@ -99,33 +100,36 @@ namespace SocialMediaApp.Areas.Identity.Pages.Account
             /// </summary>
             [DataType(DataType.Password)]
             [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "Parola și parola pentru confirmare nu se potrivesc.")]
+            [Compare("Password", ErrorMessage = "Password and confirmation password are different.")]
             public string ConfirmPassword { get; set; }
 
-            [Required(ErrorMessage = "Acest câmp este obligatoriu")]
+            [Required(ErrorMessage = "Required field.")]
             [RegularExpression("^[-A-Za-z' ]+$",
-                ErrorMessage = "Numele poate conține numai litere, linii, apostroafe și spații.")]
+                ErrorMessage = "Name can only contain letters, hyphens, apostrophes and spaces.")]
             [Display(Name = "First name")]
             public string FirstName { get; set; }
 
-            [Required(ErrorMessage = "Acest câmp este obligatoriu")]
+            [Required(ErrorMessage = "Required field.")]
             [RegularExpression("^[-A-Za-z' ]+$",
-                ErrorMessage = "Numele poate conține numai litere, linii, apostroafe și spații.")]
+                ErrorMessage = "Name can only contain letters, hyphens, apostrophes and spaces.")]
             [Display(Name = "Last name")]
             public string LastName { get; set; }
 
-            [Required(ErrorMessage = "Acest câmp este obligatoriu")]
-            [RegularExpression(@"public|privat",
-                ErrorMessage = "Profilul trebuie să fie public sau privat.")]
+            [Required(ErrorMessage = "Required field.")]
+            [RegularExpression(@"public|private",
+                ErrorMessage = "Profile must be public or private.")]
             [Display(Name = "Profile visibility")]
             public string ProfileVisibility { get; set; }
 
-            [Required(ErrorMessage = "Acest câmp este obligatoriu")]
+            [Required(ErrorMessage = "Required field")]
             [Display(Name = "Description")]
             public string Description { get; set; }
 
-            [Required(ErrorMessage = "Acest câmp este obligatoriu")]
+            [Required(ErrorMessage = "Required field.")]
             [Display(Name = "Profile picture")]
+
+            [ValidateImage]
+            [ValidateFileSize(5 * 1024 * 1024)]
             public IFormFile ProfilePicture { get; set; }
         }
 

@@ -97,10 +97,24 @@ namespace SocialMediaApp.Areas.Identity.Pages.Account.Manage
             }
 
             var dbUser = await _userManager.Users
-                .Include(u => u.Posts)
-                .Include(u => u.Comments)
-                .Include(u => u.Likes)
-                .FirstAsync(u => u.Id == user.Id);
+                            .Include(u => u.Posts)
+                                .ThenInclude(p => p.Comments)
+                            .Include(u => u.Posts)
+                                .ThenInclude(p => p.WhoLiked)
+                            .Include(u => u.Posts)
+                                .ThenInclude(p => p.Images)
+                            .Include(u => u.Posts)
+                                .ThenInclude(p => p.Videos)
+                            .Include(u => u.Comments)
+                            .Include(u => u.Likes)
+                            .Include(u => u.Followers)
+                            .Include(u => u.Follows)
+                            .Include(u => u.JoinRequests)
+                            .Include(u => u.Groups)
+                                .ThenInclude(gu => gu.Group)
+                                    .ThenInclude(g => g.Users)
+                            .Include(u => u.Messages)
+                            .FirstAsync(u => u.Id == user.Id);
 
             // anonimizam comentariile
 
@@ -116,12 +130,81 @@ namespace SocialMediaApp.Areas.Identity.Pages.Account.Manage
                 db.Likes.Remove(l);
             }
 
-            // anonimizam postarile
+            // stergem postarile
 
             foreach (var post in dbUser.Posts)
             {
-                post.UserId = null;
+                foreach (var comment in post.Comments)
+                {
+                    db.Comments.Remove(comment);
+                }
+                foreach (var like in post.WhoLiked)
+                {
+                    db.Likes.Remove(like);
+                }
+                foreach (var image in post.Images)
+                {
+                    string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "Posts", image.ImageUrl);
+                    if (System.IO.File.Exists(imagePath))
+                    {
+                        System.IO.File.Delete(imagePath);
+                    }
+                    db.Images.Remove(image);
+                }
+                foreach (var video in post.Videos)
+                {
+                    string videoPath = Path.Combine(_webHostEnvironment.WebRootPath, "videos", "Posts", video.VideoUrl);
+                    if (System.IO.File.Exists(videoPath))
+                    {
+                        System.IO.File.Delete(videoPath);
+                    }
+                    db.Videos.Remove(video);
+                }
             }
+
+            // stergem follow-urile 
+            foreach (var following in dbUser.Follows)
+            {
+                db.Follows.Remove(following);
+            }
+
+            foreach (var follow in dbUser.Followers)
+            {
+                db.Follows.Remove(follow);
+            }
+
+            // stergem join request-urile, calitatea de membru in grupuri
+            // si anonimizam mesajele
+
+            foreach (var joinRequest in dbUser.JoinRequests)
+            {
+                db.GroupJoinRequests.Remove(joinRequest);
+            }
+
+            foreach (var group in dbUser.Groups)
+            {
+                if (group.IsModerator)
+                {
+                    var userGroup = group.Group;
+                    if (userGroup.Users.Count() > 1)
+                    {
+                        var oldestUser = userGroup.Users.Where(u => u.UserId != dbUser.Id).OrderBy(u => u.JoinDate).First();
+                        oldestUser.IsModerator = true;
+                        db.GroupUsers.Remove(group);
+                    }
+                    else
+                    {
+                        db.GroupUsers.Remove(group);
+                        db.Groups.Remove(userGroup);
+                    }
+                }
+            }
+
+            foreach (var message in dbUser.Messages)
+            {
+                message.UserId = null;
+            }
+
 
             await db.SaveChangesAsync();
 

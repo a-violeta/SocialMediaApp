@@ -9,7 +9,7 @@ namespace SocialMediaApp.Models
 
         public int GroupId { get; set; }
 
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
         public string TextContent { get; set; }
 

@@ -181,7 +181,7 @@ namespace SocialMediaApp.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(newData);
+                return BadRequest();
             }
             string? id = _userManager.GetUserId(User);
             ApplicationUser? user = db.Users
@@ -251,15 +251,25 @@ namespace SocialMediaApp.Controllers
         [HttpPost, ActionName("Delete")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(string id)
-        {
-
-            //teoretic mai trebuie sterse si toate mesajele lui din diferite grupuri sau??
-            //in plus trebuie sterse si instantele lui de grup user?
-            //si toate intrarile din tabelul follows unde apare el?
+        { 
             var user = await db.ApplicationUsers
                             .Include(u => u.Posts)
+                                .ThenInclude(p => p.Comments)
+                            .Include(u => u.Posts)
+                                .ThenInclude(p => p.WhoLiked)
+                            .Include(u => u.Posts)
+                                .ThenInclude(p => p.Images)
+                            .Include(u => u.Posts)
+                                .ThenInclude(p => p.Videos)
                             .Include(u => u.Comments)
                             .Include(u => u.Likes)
+                            .Include(u => u.Followers)
+                            .Include(u => u.Follows)
+                            .Include(u => u.JoinRequests)
+                            .Include(u => u.Groups)
+                                .ThenInclude(gu => gu.Group)
+                                    .ThenInclude(g => g.Users)
+                            .Include(u => u.Messages)
                             .Where(u => u.Id == id)
                             .FirstOrDefaultAsync();
 
@@ -282,12 +292,91 @@ namespace SocialMediaApp.Controllers
                 db.Likes.Remove(l);
             }
 
-            // anonimizam postarile
+            // stergem postarile
 
             foreach (var post in user.Posts)
             {
-                post.UserId = null;
+                // stergem comentariile postarii
+                foreach (var comment in post.Comments)
+                {
+                    db.Comments.Remove(comment);
+                }
+
+                // stergem like-urile postarii
+                foreach (var like in post.WhoLiked)
+                {
+                    db.Likes.Remove(like);
+                }
+
+                // stergem imaginile postarii
+                foreach (var image in post.Images)
+                {
+                    string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "Posts", image.ImageUrl);
+                    if (System.IO.File.Exists(imagePath))
+                    {
+                        System.IO.File.Delete(imagePath);
+                    }
+                    db.Images.Remove(image);
+                }
+                foreach (var video in post.Videos)
+                {
+                    string videoPath = Path.Combine(_webHostEnvironment.WebRootPath, "videos", "Posts", video.VideoUrl);
+                    if (System.IO.File.Exists(videoPath))
+                    {
+                        System.IO.File.Delete(videoPath);
+                    }
+                    db.Videos.Remove(video);
+                }
             }
+
+            // stergem follow-urile
+            foreach (var following in user.Follows)
+            {
+                db.Follows.Remove(following);
+            }
+
+            foreach (var follow in user.Followers)
+            {
+                db.Follows.Remove(follow);
+            }
+
+            // stergem join request-urile, calitatea de membru in grupuri
+            // si anonimizam mesajele
+
+            foreach (var joinRequest in user.JoinRequests)
+            {
+                db.GroupJoinRequests.Remove(joinRequest);
+            }
+
+            // daca un user este moderator in vreun grup cand il stergem,
+            // punem al doilea cel mai vechi user ca moderator.
+            // daca nu mai e niciun alt user, stergem grupul.
+            foreach (var group in user.Groups)
+            {
+                if (group.IsModerator)
+                {
+                    var userGroup = group.Group;
+                    if (userGroup.Users.Count() > 1)
+                    {
+                        var oldestUser = userGroup.Users.Where(u => u.UserId != user.Id).OrderBy(u => u.JoinDate).First();
+                        oldestUser.IsModerator = true;
+                        db.GroupUsers.Remove(group);
+                    }
+                    else
+                    {
+                        db.GroupUsers.Remove(group);
+                        db.Groups.Remove(userGroup);
+                    }
+                }
+            }
+
+            // mesajul va avea doar user null, nu va fi sters
+            foreach (var message in user.Messages)
+            {
+                message.UserId = null;
+            }
+
+            // stergem poza de profil 
 
             if (!string.IsNullOrEmpty(user.ProfilePicture))
             {
