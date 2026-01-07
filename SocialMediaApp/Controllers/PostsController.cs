@@ -18,13 +18,6 @@ namespace SocialMediaApp.Controllers
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
         private readonly IWebHostEnvironment _webHostEnvironment = environment;
 
-        //am lasat un view gol posts/index, dar nu sunt sigura ca e folositor
-        /*
-        public IActionResult Index()
-        {
-            return View();
-        }
-        */
 
         // Se afiseaza o postare in functie de id
         // impreuna cu user ul
