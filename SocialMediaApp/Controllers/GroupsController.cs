@@ -45,6 +45,7 @@ namespace SocialMediaApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> Create(Group group)
         {
             if (!ModelState.IsValid)

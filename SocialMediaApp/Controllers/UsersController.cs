@@ -399,14 +399,18 @@ namespace SocialMediaApp.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> Follow(string id)
         {
             var currentUserId = _userManager.GetUserId(User);
 
             if (currentUserId == id)
                 return BadRequest();
-
+            var userToFollow = db.Users.Find(id);
+            if (userToFollow == null)
+            {
+                return NotFound();
+            }
             var existing = await db.Follows
                 .FirstOrDefaultAsync(f =>
                     f.FollowerId == currentUserId &&
