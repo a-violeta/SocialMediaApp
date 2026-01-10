@@ -104,15 +104,9 @@ namespace SocialMediaApp.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(newPost);
+                TempData["ErrorMessage"] = "Post cannot be empty.";
+                return RedirectToAction("New");
             }
-
-            //bool isAllowed = await _moderationService.IsPostAllowedAsync(newPost.TextContent);
-            //if (!isAllowed)
-            //{
-            //    ModelState.AddModelError("TextContent", "Please review before posting.");
-            //    return View(newPost);
-            //}
 
             var user = await _userManager.GetUserAsync(User);
 
