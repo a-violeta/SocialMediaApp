@@ -117,6 +117,12 @@ namespace SocialMediaApp.Controllers
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> New(AddPostViewModel newPost)
         {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Post cannot be empty.";
+                return RedirectToAction("New");
+            }
+
             var user = await _userManager.GetUserAsync(User);
 
             Post post = new Post

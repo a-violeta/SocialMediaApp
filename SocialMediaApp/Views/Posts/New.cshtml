@@ -5,6 +5,14 @@
         Create a new post
     </div>
 
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="d-flex w-700px-responsive alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
     <form class="d-flex flex-column w-700px-responsive"
           method="post"
           enctype="multipart/form-data"
@@ -58,5 +66,7 @@
         </div>
     </form>
 </div>
+
+
 
 
