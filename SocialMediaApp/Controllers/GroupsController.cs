@@ -2,13 +2,15 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OpenAI.Responses;
 using SocialMediaApp.Data;
 using SocialMediaApp.Models;
+using System.Text.RegularExpressions;//asta contine clasa Group, distictia: SocialMediaApp.Models.Group
 
 namespace SocialMediaApp.Controllers
 {
     [Authorize]
-    //avand authorize doar un user logat poate face un grup
+    //doar un user logat poate face actiuni pe un grup
     public class GroupsController : Controller
     {
         private readonly ApplicationDbContext db;
@@ -23,7 +25,6 @@ namespace SocialMediaApp.Controllers
         }
 
         //afisarea tuturor grupurilor
-
         public IActionResult Index()
         {
             var groups = db.Groups
@@ -33,19 +34,17 @@ namespace SocialMediaApp.Controllers
             return View(groups);
         }
 
-        //get: creare grup
-
+        //creare grup
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
-        //post: creare grup + moderator
-
+        //creare grup + moderator
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Group group)
+        public async Task<IActionResult> Create(SocialMediaApp.Models.Group group)
         {
             if (!ModelState.IsValid)
             {
@@ -70,7 +69,8 @@ namespace SocialMediaApp.Controllers
             db.GroupUsers.Add(groupUser);
             await db.SaveChangesAsync();
 
-            // redirect la pagina grupului
+            TempData["message"] = "The group has been created.";
+            TempData["messageType"] = "success";
             return RedirectToAction("Show", new { id = group.Id });
         }
 
@@ -80,8 +80,6 @@ namespace SocialMediaApp.Controllers
             var group = db.Groups
                 .Include(g => g.Users)
                     .ThenInclude(gu => gu.User)
-                //.Include(g => g.Messages)
-                    //.ThenInclude(m => m.User)
                 .FirstOrDefault(g => g.Id == id);
 
             if (group == null)
@@ -95,6 +93,7 @@ namespace SocialMediaApp.Controllers
                 gu.IsModerator);
 
             ViewBag.IsModerator = isModerator;
+            ViewBag.isAdmin = User.IsInRole("Admin");
 
             //moderatorul vede cine vrea sa intre in grup
             if (isModerator)
@@ -112,8 +111,6 @@ namespace SocialMediaApp.Controllers
         }
 
         //editare grup
-
-        // GET: afisare form editare
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -126,17 +123,17 @@ namespace SocialMediaApp.Controllers
 
             var userId = _userManager.GetUserId(User);
 
-            // doar moderatorul poate edita
+            //doar moderatorul poate edita
             if (!group.Users.Any(gu => gu.UserId == userId && gu.IsModerator))
                 return Forbid();
 
             return View(group);
         }
 
-        // POST: salvare modificari
+        //editare grup
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Group group)
+        public async Task<IActionResult> Edit(SocialMediaApp.Models.Group group)
         {
             if (!ModelState.IsValid)
                 return View(group);
@@ -146,7 +143,7 @@ namespace SocialMediaApp.Controllers
                                         .FirstOrDefaultAsync(g => g.Id == group.Id);
 
             if (existingGroup == null)
-                return NotFound();
+                return NotFound();//grup gol nu are sens?
 
             var userId = _userManager.GetUserId(User);
             if (!existingGroup.Users.Any(gu => gu.UserId == userId && gu.IsModerator))
@@ -157,20 +154,17 @@ namespace SocialMediaApp.Controllers
             existingGroup.Description = group.Description;
 
             await db.SaveChangesAsync();
-
+            TempData["message"] = "The group has been edited.";
+            TempData["messageType"] = "success";
             return RedirectToAction("Show", new { id = group.Id });
         }
 
-        //join, adica face cererea lui de a se alatura grupului
-
-        [Authorize]
+        //join, cererea de a se alatura grupului
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Join(int groupId)
         {
             var userId = _userManager.GetUserId(User);
-            if (userId == null)
-                return Unauthorized();
 
             // verificam daca e deja membru
             bool alreadyMember = db.GroupUsers
@@ -184,7 +178,11 @@ namespace SocialMediaApp.Controllers
                 .Any(r => r.GroupId == groupId && r.UserId == userId);
 
             if (alreadyRequested)
+            {
+                TempData["message"] = "Your request is pending.";
+                TempData["messageType"] = "success";
                 return RedirectToAction("Show", new { id = groupId });
+            }
 
             var request = new GroupJoinRequest
             {
@@ -194,16 +192,26 @@ namespace SocialMediaApp.Controllers
 
             db.GroupJoinRequests.Add(request);
             await db.SaveChangesAsync();
-
+            TempData["message"] = "Your request to join has been sent.";
+            TempData["messageType"] = "success";
             return RedirectToAction("Show", new { id = groupId });
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Approve(int requestId)
         {
+            var currentUserId = _userManager.GetUserId(User);
             var request = db.GroupJoinRequests.Find(requestId);
+
             if (request == null) return NotFound();
+
+            bool isModerator = db.GroupUsers.Any(gu =>
+            gu.GroupId == request.GroupId &&
+            gu.UserId == currentUserId &&
+            gu.IsModerator);
+
+            if (!isModerator)
+                return Forbid();//doar moderatorul accepta sau nu persoane in grup
 
             var groupUser = new GroupUser
             {
@@ -216,35 +224,43 @@ namespace SocialMediaApp.Controllers
             db.GroupUsers.Add(groupUser);
             db.GroupJoinRequests.Remove(request);
             await db.SaveChangesAsync();
-
+            TempData["message"] = "A user has been accepted into the group.";
+            TempData["messageType"] = "success";
             return RedirectToAction("Show", new { id = request.GroupId });
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Reject(int requestId)
         {
+            var currentUserId = _userManager.GetUserId(User);
             var request = db.GroupJoinRequests.Find(requestId);
             if (request == null) return NotFound();
-
+            
             int groupId = request.GroupId;
+
+            var isModerator = db.GroupUsers.Any(gu =>
+            gu.GroupId == request.GroupId &&
+            gu.UserId == currentUserId &&
+            gu.IsModerator);
+
+            if (!isModerator)
+                return Forbid();//doar moderatorul accepta sau nu persoane in grup
 
             db.GroupJoinRequests.Remove(request);
             await db.SaveChangesAsync();
-
+            TempData["message"] = "A user has been denied joining the group.";
+            TempData["messageType"] = "success";
             return RedirectToAction("Show", new { id = groupId });
         }
 
         //parasire grup
         //cand moderatorul paraseste se alege altul daca exista, altfel se sterge grupul
 
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Leave(int groupId)
         {
             var userId = _userManager.GetUserId(User);
-            if (userId == null) return Unauthorized();
 
             var membership = await db.GroupUsers
                 .Include(gu => gu.Group)
@@ -254,11 +270,11 @@ namespace SocialMediaApp.Controllers
             if (membership == null)
                 return NotFound();
 
-            var group = membership.Group;
+            var group = membership.Group;//group nu e null
 
             if (membership.IsModerator)
             {
-                // ceilalti membri ai grupului
+                //ceilalti membri ai grupului
                 var otherMembers = group.Users
                     .Where(u => u.UserId != userId)
                     .OrderBy(u => u.JoinDate)
@@ -266,39 +282,39 @@ namespace SocialMediaApp.Controllers
 
                 if (otherMembers.Any())
                 {
-                    // cel mai vechi devine moderator
+                    //cel mai vechi devine moderator
                     otherMembers.First().IsModerator = true;
-
+                    TempData["message"] = "You have left your group as moderator.";
+                    TempData["messageType"] = "success";
                     db.GroupUsers.Remove(membership);
                 }
                 else
                 {
-                    // nu mai e nimeni -> stergem grupul
+                    //nu mai e nimeni -> stergem grupul
+                    TempData["message"] = "The group has been deleted.";
+                    TempData["messageType"] = "success";
                     db.GroupUsers.Remove(membership);
                     db.Groups.Remove(group);
                 }
             }
             else
             {
-                // userul normal se sterge normal
+                //userul normal se sterge normal
+                TempData["message"] = "You have left the group.";
+                TempData["messageType"] = "success";
                 db.GroupUsers.Remove(membership);
             }
-
             await db.SaveChangesAsync();
-
             return RedirectToAction("Index");
         }
 
-
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveUser(int groupId, string userId)
         {
             var currentUserId = _userManager.GetUserId(User);
-            if (currentUserId == null) return Unauthorized();
 
-            // verificam daca userul curent este moderatorul
+            //verificam daca userul curent este moderatorul
             bool isModerator = db.GroupUsers.Any(gu =>
                 gu.GroupId == groupId &&
                 gu.UserId == currentUserId &&
@@ -314,8 +330,10 @@ namespace SocialMediaApp.Controllers
                 return NotFound();
 
             if (membership.IsModerator)
-                return BadRequest("A moderator can not be removed.");
+                return BadRequest();
 
+            TempData["message"] = "A user has been removed.";
+            TempData["messageType"] = "success";
             db.GroupUsers.Remove(membership);
             await db.SaveChangesAsync();
 
@@ -335,9 +353,10 @@ namespace SocialMediaApp.Controllers
                 return NotFound();
 
             var userId = _userManager.GetUserId(User);
+            bool isAdmin = User.IsInRole("Admin");
 
-            // verificam daca utilizatorul este moderator
-            if (!group.Users.Any(gu => gu.UserId == userId && gu.IsModerator))
+            //verificam daca utilizatorul este moderator sau admin
+            if (!group.Users.Any(gu => gu.UserId == userId && gu.IsModerator) && !isAdmin)
                 return Forbid();
 
             return View(group);
@@ -356,26 +375,27 @@ namespace SocialMediaApp.Controllers
                 return NotFound();
 
             var userId = _userManager.GetUserId(User);
+            bool isAdmin = User.IsInRole("Admin");
 
-            // verificam daca utilizatorul este moderator
-            if (!group.Users.Any(gu => gu.UserId == userId && gu.IsModerator))
+            //verificam daca utilizatorul este moderator
+            if (!group.Users.Any(gu => gu.UserId == userId && gu.IsModerator) && !isAdmin)
                 return Forbid();
 
-            // stergem mesajele
+            //stergem mesajele
             db.GroupMessages.RemoveRange(group.Messages);
 
-            // stergem relatiile cu utilizatorii
+            //stergem relatiile cu utilizatorii
             db.GroupUsers.RemoveRange(group.Users);
 
-            // stergem cererile de join (nu prea mai conteaza daca raman sau nu)
+            //stergem cererile de join (nu prea mai conteaza daca raman sau nu)
             var joinRequests = db.GroupJoinRequests.Where(r => r.GroupId == id);
             db.GroupJoinRequests.RemoveRange(joinRequests);
 
-            // stergem grupul
+            //stergem grupul
             db.Groups.Remove(group);
-
             await db.SaveChangesAsync();
-
+            TempData["message"] = "The group has been deleted.";
+            TempData["messageType"] = "success";
             return RedirectToAction("Index");
         }
 
@@ -395,11 +415,13 @@ namespace SocialMediaApp.Controllers
             var userId = _userManager.GetUserId(User);
             bool isMember = group.Users.Any(u => u.UserId == userId);
 
-            if (!isMember) return Forbid();
+            //admin va putea vedea mesajele fara sa fie membru
+            if (!isMember && !User.IsInRole("Admin")) return Forbid();
 
             ViewBag.IsModerator = group.Users.Any(u => u.UserId == userId && u.IsModerator);
+            ViewBag.isAdmin = User.IsInRole("Admin");
 
-            return View(group); // va folosi Messages.cshtml
+            return View(group); //va folosi Messages.cshtml din Groups
         }
 
 
@@ -409,7 +431,8 @@ namespace SocialMediaApp.Controllers
         {
             if (string.IsNullOrWhiteSpace(textContent))
             {
-                TempData["MessageError"] = "The message can not be empty.";
+                TempData["message"] = "The message can not be empty.";
+                TempData["messageType"] = "danger";
                 return RedirectToAction("Messages", new { groupId });
             }
 
@@ -430,6 +453,8 @@ namespace SocialMediaApp.Controllers
             };
 
             db.GroupMessages.Add(message);
+            TempData["message"] = "Message has been sent.";
+            TempData["messageType"] = "success";
             await db.SaveChangesAsync();
 
             return RedirectToAction("Messages", new { groupId });
@@ -450,14 +475,16 @@ namespace SocialMediaApp.Controllers
             var userId = _userManager.GetUserId(User);
 
             bool isModerator = db.GroupUsers.Any(gu => gu.GroupId == message.GroupId && gu.UserId == userId && gu.IsModerator);
+            bool isAdmin = User.IsInRole("Admin");
 
-            // doar autorul si moderatorul pot sterge
-            if (message.UserId != userId && !isModerator)
+            //doar autorul, moderatorul si adminii pot sterge
+            if (message.UserId != userId && !isModerator && !isAdmin)
                 return Forbid();
 
             db.GroupMessages.Remove(message);
             await db.SaveChangesAsync();
-
+            TempData["message"] = "The message has been deleted.";
+            TempData["messageType"] = "success";
             return RedirectToAction("Messages", new { groupId = message.GroupId });
         }
 
@@ -467,17 +494,18 @@ namespace SocialMediaApp.Controllers
         {
             var userId = _userManager.GetUserId(User);
 
-            // verificam daca utilizatorul este membru al grupului
+            //verificam daca utilizatorul este membru al grupului
             bool isMember = await db.GroupUsers
                 .AnyAsync(gu => gu.GroupId == groupId && gu.UserId == userId);
 
             if (!isMember)
                 return Forbid();
 
-            // validare text
+            //validare text
             if (string.IsNullOrWhiteSpace(textContent))
             {
-                TempData["MessageError"] = "The message can not be empty.";
+                TempData["message"] = "The message can not be empty.";
+                TempData["messageType"] = "danger";
                 return RedirectToAction("Messages", new { groupId });
             }
 
@@ -487,20 +515,21 @@ namespace SocialMediaApp.Controllers
             if (message == null)
                 return NotFound();
 
-            // doar autorul poate edita mesajul
+            //doar autorul poate edita mesajul
             if (message.UserId != userId)
                 return Forbid();
 
             message.TextContent = textContent;
             await db.SaveChangesAsync();
-
+            TempData["message"] = "The message has been edited.";
+            TempData["messageType"] = "success";
             return RedirectToAction("Messages", new { groupId });
         }
 
         [HttpGet]
         public IActionResult Search()
         {
-            // afisează pagina de search goala
+            //afiseaza pagina de search goala
             return View();
         }
 
@@ -509,22 +538,23 @@ namespace SocialMediaApp.Controllers
         public async Task<IActionResult> Search(string query, bool searchBy)
         {
             if (string.IsNullOrWhiteSpace(query))
-                return View(new List<Group>()); // sau un ViewModel
+                return View(new List<SocialMediaApp.Models.Group>()); //sau un ViewModel
 
-            IQueryable<Group> groups = db.Groups;
+            IQueryable<SocialMediaApp.Models.Group> groups = db.Groups
+                .Include(g => g.Users);
 
-            if (searchBy) // true = search by Name
+            if (searchBy) //true = search by Name
                 groups = groups.Where(g => g.Name.Contains(query));
-            else // search by Id
+            else //search by Id
             {
                 if (int.TryParse(query, out int id))
                     groups = groups.Where(g => g.Id == id);
                 else
-                    groups = groups.Where(g => false); // ID invalid
+                    groups = groups.Where(g => false); //id invalid
             }
 
             var results = await groups.ToListAsync();
-            return View("SearchResults", results); // trimitem doar lista de grupuri
+            return View("SearchResults", results); //trimitem doar lista de grupuri
         }
 
     }

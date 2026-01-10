@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using SocialMediaApp.Data;
 using SocialMediaApp.Models;
+//using SocialMediaApp.Services;
 using System.Security.Claims;
 
 namespace SocialMediaApp.Controllers
@@ -11,25 +13,39 @@ namespace SocialMediaApp.Controllers
     [Authorize]
     public class CommentsController(ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager) : Controller
+        RoleManager<IdentityRole> roleManager//,
+        /*IAIContentModerationService moderationService*/) : Controller
     {
         private readonly ApplicationDbContext db = context;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+        //private readonly IAIContentModerationService _moderationService = moderationService;
 
+        //moderation service fusese prima incercare de companion ai
 
-        // POST: Add new comment
+        //new comment
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> New(int PostId, string Content)
         {
-            var userId = _userManager.GetUserId(User);
-
             if (string.IsNullOrWhiteSpace(Content))
             {
-                TempData["CommentError"] = "The comment cannot be empty.";
+                TempData["message"] = "The comment cannot be empty.";
+                TempData["messageType"] = "danger";
                 return RedirectToAction("Show", "Posts", new { id = PostId });
             }
+
+            //var moderationResult = await _moderationService.CheckTextAsync(Content);
+
+            //if (!moderationResult.IsAllowed)
+            //{
+            //    TempData["message"] = moderationResult.Reason ?? "The comment contains inappropriate content.";
+            //    TempData["messageType"] = "danger";
+
+            //    return RedirectToAction("Show", "Posts", new { id = PostId });
+            //}
+
+            var userId = _userManager.GetUserId(User);
 
             var comment = new Comment
             {
@@ -41,10 +57,13 @@ namespace SocialMediaApp.Controllers
             db.Comments.Add(comment);
             await db.SaveChangesAsync();
 
+            TempData["message"] = "The comment has been posted.";
+            TempData["messageType"] = "success";
+
             return RedirectToAction("Show", "Posts", new { id = PostId });
         }
 
-        // get, edit comment
+        //edit comment
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -62,7 +81,7 @@ namespace SocialMediaApp.Controllers
             return View(comment);
         }
 
-        // post, edit comment
+        //edit comment
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, string Content)
@@ -80,17 +99,35 @@ namespace SocialMediaApp.Controllers
 
             if (string.IsNullOrWhiteSpace(Content))
             {
-                TempData["CommentError"] = "The comment cannot be empty.";
-                return RedirectToAction("Show", "Posts", new { id = comment.PostId });
+                ModelState.Remove("Content");//fara asta nu se suprascria mesajul meu de eroare
+
+                ModelState.AddModelError(
+                    "Content",
+                    "Comment can not be empty."
+                    );
+
+                return View(comment);
             }
+
+            //var moderationResult = await _moderationService.CheckTextAsync(Content);
+
+            //if (!moderationResult.IsAllowed)
+            //{
+            //    TempData["message"] = "Comment is not approved. Please rethink.";
+            //    TempData["messageType"] = "danger";
+            //    return View(comment);
+            //}
 
             comment.Content = Content;
             await db.SaveChangesAsync();
 
+            TempData["message"] = "Comment has been edited.";
+            TempData["messageType"] = "success";
+
             return RedirectToAction("Show", "Posts", new { id = comment.PostId });
         }
 
-        // post, delete comment
+        //delete comment
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -109,6 +146,9 @@ namespace SocialMediaApp.Controllers
 
             db.Comments.Remove(comment);
             await db.SaveChangesAsync();
+
+            TempData["message"] = "Comment has been deleted.";
+            TempData["messageType"] = "success";
 
             return RedirectToAction("Show", "Posts", new { id = comment.PostId });
         }

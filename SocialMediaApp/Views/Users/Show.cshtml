@@ -1,5 +1,14 @@
 ﻿@model SocialMediaApp.Models.ApplicationUser
 
+@if (TempData["message"] != null)
+{
+    var messageType = TempData["messageType"]?.ToString() ?? "info";
+    <div class="alert alert-@messageType alert-dismissible fade show" role="alert">
+        @TempData["message"]
+        <!--<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>-->
+    </div>
+}
+
 <div class="full-profile d-flex flex-column align-items-center">
     <div class="user-profile d-flex flex-column flex-wrap align-items-center position-relative pb-3"> 
         @*informatii profil*@

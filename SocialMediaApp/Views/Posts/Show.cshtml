@@ -14,7 +14,7 @@
     var messageType = TempData["messageType"]?.ToString() ?? "info";
     <div class="alert alert-@messageType alert-dismissible fade show" role="alert">
         @TempData["message"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <!--<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>-->
     </div>
 }
 
@@ -191,14 +191,14 @@
                         @if (comm.UserId != null && comm.UserId == currentUserId)
                         {
                             <a class="btn btn-outline-primary btn-sm" asp-controller="Comments" asp-action="Edit" asp-route-id="@comm.Id">
-                                <i class="bi bi-pencil-square"></i> Edit
+                                <i class="bi bi-pencil-square"></i>
                             </a>
                         }
 
                         @* autorul si admin pot sterge *@
                         <form method="post" asp-controller="Comments" asp-action="Delete" asp-route-id="@comm.Id">
                             <button class="btn btn-outline-danger btn-sm" type="submit">
-                                <i class="bi bi-trash"></i> Delete
+                                <i class="bi bi-trash"></i>
                             </button>
                         </form>
 

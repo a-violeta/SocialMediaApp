@@ -33,21 +33,8 @@ namespace SocialMediaApp.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        //admin poate vedea toti utilizatorii
-        //nu stiu daca ajuta neaparat cu ceva
-        
-        [Authorize(Roles = "Admin")]
-        public IActionResult Index()
-        {
-            var users = db.Users.OrderBy(u => u.UserName);
-
-            ViewBag.UsersList = users;
-
-            return View();
-        }
-
         //cautare user dupa o bucata din nume/prenume sau nume complet, mai multe cuvinte
-        //afiseaza orice user (privat/public) momentan
+        //afiseaza orice user (privat/public)
 
         [HttpGet]
         [AllowAnonymous]
@@ -153,7 +140,7 @@ namespace SocialMediaApp.Controllers
 
         }
 
-        // editare user e finalizata
+        // editare user
         [HttpGet]
         public async Task<ActionResult> Edit()
         {
@@ -439,7 +426,7 @@ namespace SocialMediaApp.Controllers
         {
             var currentUserId = _userManager.GetUserId(User);
 
-            //ID urile utilizatorilor urmariti
+            //id urile utilizatorilor urmariti
             var followingIds = await db.Follows
                 .Where(f => f.FollowerId == currentUserId && f.Accepted)
                 .Select(f => f.FollowedId)
