@@ -347,9 +347,6 @@ namespace SocialMediaApp.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -364,8 +361,6 @@ namespace SocialMediaApp.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("GroupId");
 
@@ -593,10 +588,6 @@ namespace SocialMediaApp.Data.Migrations
 
             modelBuilder.Entity("SocialMediaApp.Models.GroupMessage", b =>
                 {
-                    b.HasOne("SocialMediaApp.Models.ApplicationUser", null)
-                        .WithMany("Messages")
-                        .HasForeignKey("ApplicationUserId");
-
                     b.HasOne("SocialMediaApp.Models.Group", "Group")
                         .WithMany("Messages")
                         .HasForeignKey("GroupId")
@@ -604,9 +595,8 @@ namespace SocialMediaApp.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("SocialMediaApp.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany("Messages")
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Group");
 

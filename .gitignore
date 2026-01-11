@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/SocialMediaApp/Data/Migrations/20260110190446_ResetDatabase.cs
+/SocialMediaApp/Data/Migrations/ApplicationDbContextModelSnapshot.cs
+/SocialMediaApp/Data/Migrations/20260110190446_ResetDatabase.Designer.cs
+/SocialMediaApp/Data/Migrations/ApplicationDbContextModelSnapshot.cs
