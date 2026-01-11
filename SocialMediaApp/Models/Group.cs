@@ -6,9 +6,9 @@ namespace SocialMediaApp.Models
     {
         [Key]
         public int Id { get; set; }
-        [Required(ErrorMessage = "Grupul trebuie să aibă un nume")]
+        [Required(ErrorMessage = "The group needs to have a name.")]
         public string? Name { get; set; }
-        [Required(ErrorMessage = "Grupul trebuie să aibă o descriere")]
+        [Required(ErrorMessage = "The group needs to have a description.")]
         public string? Description { get; set; }
 
         // Proprietati de navigatie: 3

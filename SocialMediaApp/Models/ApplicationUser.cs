@@ -42,12 +42,5 @@ namespace SocialMediaApp.Models
         public virtual ICollection<Follows> Followers { get; set; } = [];
 
         public virtual ICollection<GroupJoinRequest> JoinRequests { get; set; } = [];
-
-        // variabila in care vom retine rolurile existente in baza de date
-        // pentru popularea unui dropdown list
-        // in ideea ca admin poate modifica rolul unui user
-        // admin poate sterge un user si atunci il sterge si din toate rolurile
-        [NotMapped]
-        public IEnumerable<SelectListItem>? AllRoles { get; set; }
     }
 }

@@ -2,38 +2,59 @@
 @model IEnumerable<SocialMediaApp.Models.Group>
 @inject UserManager<ApplicationUser> UserManager
 
+@if (TempData["message"] != null)
+{
+    var messageType = TempData["messageType"]?.ToString() ?? "info";
+    <div class="alert alert-@messageType alert-dismissible fade show" role="alert">
+        @TempData["message"]
+        <!--<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>-->
+    </div>
+}
+
 <h2>Groups to join</h2>
+
+<div class="d-flex align-items-center gap-3">
+    <a asp-controller="Groups"
+       asp-action="Create"
+       class="btn btn-outline-primary d-inline-flex align-items-center gap-2">
+        <i class="bi bi-person-add"></i>
+        New group
+    </a>
+
+</div>
 
 <br />
 
 @if (!Model.Any())
 {
-    <p class="text-muted">There are no groups.</p>
+    <p class="text-muted text-center mt-4">There are no groups.</p>
 }
 else
 {
-    <div class="list-group">
+    <div class="w-700px-responsive mx-auto">
         @foreach (var group in Model)
         {
-            <div class="list-group-item d-flex justify-content-between align-items-center mb-2 p-3 border rounded">
+            <div class="profile-post d-flex justify-content-between align-items-center mb-3 p-3 border rounded shadow-sm">
 
                 <!-- info grup -->
-                <div>
-                    <a asp-controller="Groups" asp-action="Show" asp-route-id="@group.Id">
-                        <strong>@group.Name</strong>
+                <div class="d-flex flex-column">
+                    <a asp-controller="Groups" asp-action="Show" asp-route-id="@group.Id" class="text-decoration-none mb-1">
+                        <strong class="fs-5">@group.Name</strong>
                     </a>
-                    <p class="mb-1 text-muted">
-                        <i class="bi bi-card-text"></i>
+
+                    <p class="mb-2 text-muted">
+                        <i class="bi bi-card-text me-1"></i>
                         @group.Description
                     </p>
-                    <small>
-                        <i class="bi bi-people"></i>
+
+                    <small class="text-secondary">
+                        <i class="bi bi-people me-1"></i>
                         @group.Users.Count members
                     </small>
                 </div>
 
-                <!-- buton join / leave, moderatorul nu le vede pt ca el intentionez sa nu iasa din grup de aici, pare dubios asa -->
-                <div>
+                <!-- buton join / leave -->
+                <div class="d-flex flex-column align-items-end">
                     @{
                         var userId = UserManager.GetUserId(User);
                         var isMember = group.Users.Any(u => u.UserId == userId);
@@ -44,20 +65,22 @@ else
                     {
                         <form asp-action="Leave" method="post" class="d-inline">
                             <input type="hidden" name="groupId" value="@group.Id" />
-                            <button type="submit" class="btn btn-warning btn-sm">Leave</button>
+                            <button type="submit" class="btn btn-warning btn-sm d-flex align-items-center gap-1">
+                                <i class="bi bi-box-arrow-left"></i> Leave
+                            </button>
                         </form>
                     }
-                    else
+                    else if (!isMember)
                     {
-                        if (!isMember)
-                        {
-                            <form asp-action="Join" method="post" class="d-inline">
-                                <input type="hidden" name="groupId" value="@group.Id" />
-                                <button type="submit" class="btn btn-success btn-sm">Join</button>
-                            </form>
-                        }
+                        <form asp-action="Join" method="post" class="d-inline">
+                            <input type="hidden" name="groupId" value="@group.Id" />
+                            <button type="submit" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                                <i class="bi bi-person-plus"></i> Join
+                            </button>
+                        </form>
                     }
                 </div>
+
             </div>
         }
     </div>

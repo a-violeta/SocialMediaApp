@@ -5,8 +5,6 @@ namespace SocialMediaApp.Models
 {
     public class Likes
     {
-        [Key]
-        public int Id { get; set; }  // cheie primară, necesară pentru EF
 
         [Required]
         public string? UserId { get; set; }

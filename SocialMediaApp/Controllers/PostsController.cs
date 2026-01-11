@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocialMediaApp.Data;
 using SocialMediaApp.Models;
+//using SocialMediaApp.Services;
 using SocialMediaApp.ViewModels;
 
 namespace SocialMediaApp.Controllers
@@ -11,28 +12,18 @@ namespace SocialMediaApp.Controllers
     public class PostsController(ApplicationDbContext context, 
         UserManager<ApplicationUser> userManager, 
         RoleManager<IdentityRole> roleManager,
-        IWebHostEnvironment environment) : Controller
+        IWebHostEnvironment environment//,
+        /*AiModerationService moderationService*/) : Controller
     {
         private readonly ApplicationDbContext db = context;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
         private readonly IWebHostEnvironment _webHostEnvironment = environment;
+        //private readonly AiModerationService _moderationService = moderationService;
 
-        //am lasat un view gol posts/index, dar nu sunt sigura ca e folositor
-        /*
-        public IActionResult Index()
-        {
-            return View();
-        }
-        */
+        //fusese prima varianta de companion ai
 
-        // Se afiseaza o postare in functie de id
-        // impreuna cu user ul
-        // In plus sunt preluate si toate comentariile asociate
-        // doar ca afisarea continutului nu merge inca
-        
-        // [HttpGet]
-
+        //afisare postare
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> Show(int id)
         {
@@ -41,7 +32,7 @@ namespace SocialMediaApp.Controllers
                                  .Include(a => a.Images)
                                  .Include(a => a.Videos)
                                  .Include(a => a.WhoLiked)
-                                 .Include(a => a.Comments)
+                                 .Include(a => a.Comments.OrderByDescending(c => c.CreatedAt))
                                     .ThenInclude(c => c.User) // userii care au scris comentariile
                                  .Where(a => a.Id == id)
                                  .FirstOrDefaultAsync();
@@ -85,8 +76,6 @@ namespace SocialMediaApp.Controllers
                     return RedirectToAction("Show", "Users", new { id = post.UserId });
                 }
             }
-            //SetAccessRights();
-            //metoda asta e din lab 10 dar n am adaugat o inca
 
             if (TempData.ContainsKey("message"))
             {
@@ -99,10 +88,7 @@ namespace SocialMediaApp.Controllers
             return View(post);
         }
 
-        // Formularul in care se vor completa datele unei postari
-        
-        // [HttpGet] se executa implicit
-
+        //postare noua
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> New()
         {
@@ -111,8 +97,7 @@ namespace SocialMediaApp.Controllers
             return View(post);
         }
 
-        // Se adauga postarea in baza de date
-        
+        //postare noua        
         [HttpPost]
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> New(AddPostViewModel newPost)
@@ -172,6 +157,8 @@ namespace SocialMediaApp.Controllers
                 }
                 post.Videos.Add(new Video { VideoUrl = videoFile });
             }
+
+            //tempdata[message]=...
             await db.SaveChangesAsync();
             return RedirectToAction("Show", "Posts", new {id = post.Id});
         }
@@ -219,13 +206,13 @@ namespace SocialMediaApp.Controllers
             var model = new AddPostViewModel
             {
                 TextContent = post.TextContent,
-                // nu reincarcam imaginile aici (IFormFile nu se poate)
+                //ne trebuie media curent ca sa stim ce editam
                 ExistingImageIds = post.Images.Select(i => i.Id).ToList(),
                 ExistingVideoIds = post.Videos.Select(v => v.Id).ToList()
             };
 
             ViewBag.PostId = post.Id;
-            //ca sa afisam imaginile/video reale in view
+            //ca sa avem imaginile/video reale in view
             ViewBag.Post = post;
             return View(model);
         }
@@ -255,6 +242,20 @@ namespace SocialMediaApp.Controllers
 
             if (post.UserId != currentUserId)
                 return Forbid();
+
+            //var moderationResult = await _moderationService.CheckTextAsync(model.TextContent);
+
+            //if (!moderationResult.IsAllowed)
+            //{
+            //    ModelState.AddModelError(
+            //        "TextContent",
+            //        moderationResult.Reason ?? "The post contains inappropriate content."
+            //    );
+
+            //    ViewBag.PostId = id;
+            //    ViewBag.Post = post; // ca sa reafisam imaginile, video urile
+            //    return View(model);
+            //}
 
             // edit text
             post.TextContent = model.TextContent;
@@ -380,8 +381,8 @@ namespace SocialMediaApp.Controllers
             db.Posts.Remove(post);
             await db.SaveChangesAsync();
 
-            //TempData["message"] = "The post has been successfully removed.";
-            //TempData["messageType"] = "success";
+            TempData["message"] = "The post has been successfully removed.";
+            TempData["messageType"] = "success";
 
             return RedirectToAction("Show", "Users", new { id = post.UserId });
         }
