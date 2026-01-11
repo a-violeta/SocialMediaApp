@@ -11,7 +11,7 @@ namespace SocialMediaApp.ViewModels
         public string? LastName { get; set; }
 
         [Required(ErrorMessage = "Setting profile visibility is required")]
-        [RegularExpression(@"^(public|privat)$",
+        [RegularExpression(@"^(public|private)$",
             ErrorMessage = "The profile can only be public or private")]
         public string? ProfileVisibility { get; set; }
 
