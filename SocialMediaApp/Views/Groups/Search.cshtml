@@ -2,29 +2,37 @@
     ViewData["Title"] = "Search Groups";
 }
 
-<h3>Search Groups</h3>
+<div class="d-flex justify-content-center mt-5">
+    <div class="w-700px-responsive">
 
-<form asp-action="Search" method="post">
-    @Html.AntiForgeryToken()
+        <h3 class="mb-4 text-center">Search Groups</h3>
 
-    <div class="mb-3">
-        <input type="text" name="query" class="form-control" placeholder="Enter search term" />
+        <form asp-action="Search" method="post" class="mb-3">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3 input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" name="query" class="form-control" placeholder="Enter search term" />
+            </div>
+
+            <div class="mb-3">
+                <select name="searchBy" class="form-select">
+                    <option value="true">By Name</option>
+                    <option value="false">By ID</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary d-flex align-items-center gap-1">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </form>
+
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-info mt-2 text-center">
+                @ViewBag.Message
+            </div>
+        }
+
     </div>
-
-    <div class="mb-3">
-        <select name="searchBy" class="form-select">
-            <option value="true">By Name</option>
-            <option value="false">By ID</option>
-        </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Search</button>
-</form>
-
-
-@if (ViewBag.Message != null)
-{
-    <div class="alert alert-info mt-2">
-        @ViewBag.Message
-    </div>
-}
+</div>

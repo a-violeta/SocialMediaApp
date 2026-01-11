@@ -1,6 +1,15 @@
 ﻿@using System.Security.Claims
 @model Group
 
+@if (TempData["message"] != null)
+{
+    var messageType = TempData["messageType"]?.ToString() ?? "info";
+    <div class="alert alert-@messageType alert-dismissible fade show" role="alert">
+        @TempData["message"]
+        <!--<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>-->
+    </div>
+}
+
 <h3>Messages – @Model.Name</h3>
 
 <a asp-action="Show"
@@ -20,6 +29,7 @@
 @{
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     bool isModerator = ViewBag.IsModerator == true;
+    bool isAdmin = ViewBag.isAdmin == true;
     DateTime? lastDate = null;
     var today = DateTime.Today;
     var yesterday = today.AddDays(-1);
@@ -106,7 +116,7 @@
                         </small>
 
                         @* butoane edit / delete *@
-                        @if (isOwnMessage || isModerator)
+                        @if (isOwnMessage || isModerator || isAdmin)
                         {
                             <div class="text-end mt-1">
 
@@ -178,19 +188,16 @@
 
     <input type="hidden" name="groupId" value="@Model.Id" />
 
-    <textarea name="textContent"
+    <textarea name="TextContent"
               class="form-control mb-2"
               rows="3"
-              placeholder="Write a message..."
-              required></textarea>
+              placeholder="Write a message..."></textarea>
 
     <button type="submit"
             class="btn btn-primary btn-sm">
         Send
     </button>
 </form>
-
-<!--edit mesaj inline-->
 
 @section Scripts {
     <script>
