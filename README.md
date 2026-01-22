@@ -1,5 +1,5 @@
 # A Twitter-like web application using ASP.NET Core
-The web application uses Entity Framework and SQL Server along with other packages. It is a collaborative project between me and [darius006](https://github.com/darius006/SocialMediaApp). The workload has been split evenly ensuring both of us have worked frontend and backend. Foder more details checkout `Proiecte_Laborator (1).pdf`.
+The web application uses Entity Framework and SQL Server along with other packages. It is a collaborative project between me and [darius006](https://github.com/darius006/SocialMediaApp). The workload has been split evenly ensuring both of us have worked frontend and backend. It uses the MVC model. The 'Agile' methodology was used during the making of the project, the tasks were split into 4 sprints and documented on 'trello'. For more details checkout `Proiecte_Laborator (1).pdf`.
 
 ## Install
 ```bash
