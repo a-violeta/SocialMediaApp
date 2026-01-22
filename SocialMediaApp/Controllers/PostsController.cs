@@ -158,7 +158,6 @@ namespace SocialMediaApp.Controllers
                 post.Videos.Add(new Video { VideoUrl = videoFile });
             }
 
-            //tempdata[message]=...
             await db.SaveChangesAsync();
             return RedirectToAction("Show", "Posts", new {id = post.Id});
         }
