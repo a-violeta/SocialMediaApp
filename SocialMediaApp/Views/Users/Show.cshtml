@@ -69,6 +69,18 @@
         }
     </div>
     <div class="profile-posts-container d-flex flex-column border-top">
-        <partial name="ProfilePosts" model="Model"></partial>
+        @if (Model.Posts.Any()) 
+        {
+            <partial name="ProfilePosts" model="Model"></partial>
+        }
+        else
+        {
+            <div class="d-flex flex-column align-items-center mt-5">
+                <i class="bi bi-person-circle text-muted fs-1"></i>
+                <div class="text-muted text-wrap text-break cursor-default">
+                    This profile has no posts yet.
+                </div>
+            </div>
+        }
     </div>
 </div>
