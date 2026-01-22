@@ -1,4 +1,4 @@
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/85c43113-d7c8-425a-9747-6de7344546ac" /># A Twitter-like web application using ASP.NET Core
+# A Twitter-like web application using ASP.NET Core
 The web application uses Entity Framework and SQL Server along with other packages. It is a collaborative project between me and [darius006](https://github.com/darius006/SocialMediaApp). The workload has been split evenly ensuring both of us have worked frontend and backend. Foder more details checkout `Proiecte_Laborator (1).pdf`.
 
 ## Install
